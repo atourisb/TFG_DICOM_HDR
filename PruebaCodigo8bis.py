@@ -171,8 +171,8 @@ def _is_unsupported(ds):
     return False
 
 def main():
-    dicom2img(origin="/home/rainor/PycharmProjects/tfg/2-2.dcm")
-    #dicom2img(origin= "/home/rainor/PycharmProjects/tfg/1-1001.dcm")
+    dicom2img(origin="/home/rainor/PycharmProjects/tfg/Imagenes DICOM/2-2.dcm")
+    #dicom2img(origin= "/home/rainor/PycharmProjects/tfg/Imagenes DICOM/1-1001.dcm")
 
 if __name__ == "__main__":
     main()

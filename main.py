@@ -9,7 +9,7 @@ import imageio
 
 def print_directory():
     # Especifica el directorio que deseas listar
-    directorio = "/home/rainor/PycharmProjects/tfg/"
+    directorio = "/home/rainor/PycharmProjects/tfg/Imagenes DICOM/"
     # Construye el comando
     comando = f"ls -l {directorio}"
     # Ejecuta el comando y captura la salida
@@ -55,7 +55,7 @@ def plot_multiple_images():
 
     plots = []
 
-    for f in glob.glob("/home/rainor/PycharmProjects/tfg/*.dcm"):
+    for f in glob.glob("/home/rainor/PycharmProjects/tfg/Imagenes DICOM/*.dcm"):
         print(f.split("/")[-1])
         filename = f.split("/")[-1]
         ds = pydicom.dcmread(filename)
