@@ -206,9 +206,9 @@ def _is_unsupported(ds):
 
 def main():
 
-    #dicom2img(origin="/home/rainor/PycharmProjects/tfg/Imagenes DICOM/1-1001.dcm")
-    #dicom2img(origin= "/home/rainor/PycharmProjects/tfg/Imagenes DICOM/2-1.dcm")
-    dicom2img(origin= "/home/rainor/PycharmProjects/tfg/Imagenes DICOM/2-2.dcm")
+    #dicom2img(origin="/home/rainor/PycharmProjects/tfg/ImagenesDICOM/1-1001.dcm")
+    #dicom2img(origin= "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/2-1.dcm")
+    dicom2img(origin= "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/2-2.dcm")
 
 if __name__ == "__main__":
     main()
