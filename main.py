@@ -1,4 +1,5 @@
 import glob
+import os
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -78,7 +79,13 @@ def plot_multiple_images():
         max_pixel_value = ds.pixel_array.max()
         print("Minimo valor ", min_pixel_value ," Maximo valor ", max_pixel_value)
 
+        #primero intento de que no salga en negro
+        pixel_data_prueba = (ds.pixel_array*100)/65535
+        output_path16 = "output_imagemain16.tiff"
+        #imageio.imsave(output_path16, pixel_data_prueba, format='TIFF')
 
+
+        #Esta linea lo que hace es transformar los valores de positivos a negativos pero no se porque prefiere tener el pixel data en valores por debajo de 0
         pixel_data = pixel_data*1+(-1024)
         plots.append(pixel_data)
 
@@ -86,18 +93,22 @@ def plot_multiple_images():
         data = np.random.randint(min_pixel_value, max_pixel_value, size=(width, height), dtype=np.uint32)
 
         # Especificar el nombre del archivo TIFF
-        output_path = "output_image.tiff"
+        output_name = "output_image.tiff"
+        output_path = os.path.join("/home/rainor/PycharmProjects/tfg/", output_name)
 
         # Guardar la imagen como TIFF
-        imageio.imsave(eoutput_path, ds.pixel_array, format='TIFF')
-
+        imageio.imsave(output_path, pixel_data, format='tiff')
         print(f"Imagen TIFF guardada en: {output_path}")
+
+        #print(f"Imagen TIFF guardada en: {output_path}")
 
     y = np.dstack(plots)
 
     tracker = IndexTracker(ax, y)
 
     fig.canvas.mpl_connect('scroll_event', tracker.onscroll)
+    plt.figure()
+    plt.imshow(pixel_data)
     plt.show()
 
 def main():
