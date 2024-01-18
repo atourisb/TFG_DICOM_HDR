@@ -41,10 +41,14 @@ def _dicom_to_img(origin, input_type):
 
     # read images and their pixel data
     ds = pydicom.dcmread(origin, force=True)
+    print("tipe ds", type(ds))
+
+    print("tipe pixel_data", type(ds.pixel_array))
 
     resolution = (ds.Rows, ds.Columns)
     print(resolution)
     min_pixel_value = ds.pixel_array.min()
+    print("tipe de min pixel value", type(min_pixel_value))
     max_pixel_value = ds.pixel_array.max()
     print("Minimo valor ", min_pixel_value, " Maximo valor ", max_pixel_value)
     plt.figure()
@@ -110,8 +114,8 @@ def _pixel_process(ds, pixel_array):
         # cannot use INT, because rescale slope could be<1
         rescale_slope = float(ds.RescaleSlope)  # int(ds.RescaleSlope)
         rescale_intercept = float(ds.RescaleIntercept)  # int(ds.RescaleIntercept)
-        print ("Rescale_slope ", rescale_slope)
-        print("Rescale_intercept ", rescale_intercept)
+        print ("Rescale_slope ", rescale_slope, type(rescale_slope))
+        print("Rescale_intercept ", rescale_intercept, type(rescale_slope))
         pixel_array = (pixel_array) * rescale_slope + rescale_intercept
         #print("pixel array despues de la multiplicacion del rescale slope y lo otro ", pixel_array)
     else:
@@ -130,7 +134,9 @@ def _pixel_process(ds, pixel_array):
         #print("pixel array despues apply_voi_lut ", pixel_array)
     elif 'WindowCenter' in ds and 'WindowWidth' in ds:
         window_center = ds.WindowCenter
+        print("WindowCenter ", type(window_center))
         window_width = ds.WindowWidth
+        print("WindowWidth ", type(window_width))
         # some values may be stored in an array
         if type(window_center) == pydicom.multival.MultiValue:
             window_center = float(window_center[0])
@@ -167,6 +173,7 @@ def _pixel_process(ds, pixel_array):
 
     # conver float -> 16-bit
     pixel_array = pixel_array.astype('uint16')
+    print("pixel_array final ", type(pixel_array))
 
     return pixel_array.astype('uint16')
 

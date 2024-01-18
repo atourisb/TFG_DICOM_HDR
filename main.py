@@ -7,6 +7,60 @@ import pydicom
 import subprocess
 import imageio
 
+
+# Modelo
+
+class Modelo:
+    def __init__(self, data):
+        self.data = data
+
+    def get_data(self):
+        return self.data
+
+    def set_data(self, new_data):
+        self.data = new_data
+
+
+# Vista
+
+class Vista:
+    def mostrar_data(self, data):
+        print(f"Vista: Mostrando datos {data}")
+
+
+# Controlador
+
+class Controlador:
+    def __init__(self, modelo, vista):
+        self.modelo = modelo
+        self.vista = vista
+
+    def actualizar_vista(self):
+        data = self.modelo.get_data()
+        self.vista.mostrar_data(data)
+
+    def modificar_data(self, new_data):
+        self.modelo.set_data(new_data)
+        self.actualizar_vista()
+
+
+# Uso del MVC
+
+# Crear instancias de Modelo, Vista y Controlador
+modelo = Modelo(data="Datos iniciales")
+vista = Vista()
+controlador = Controlador(modelo, vista)
+
+# Inicializar la vista con los datos del modelo
+controlador.actualizar_vista()
+
+# Modificar los datos a través del controlador
+controlador.modificar_data(new_data="Nuevos datos")
+
+# Verificar que la vista se actualice automáticamente
+controlador.actualizar_vista()
+
+
 def print_directory():
     # Especifica el directorio que deseas listar
     directorio = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/"
