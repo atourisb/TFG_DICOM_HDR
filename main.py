@@ -1,172 +1,116 @@
-import glob
-import os
-
-import matplotlib.pyplot as plt
-import numpy as np
-import pydicom
-import subprocess
-import imageio
-
-
-# Modelo
-
-class Modelo:
-    def __init__(self, data):
-        self.data = data
-
-    def get_data(self):
-        return self.data
-
-    def set_data(self, new_data):
-        self.data = new_data
-
-
-# Vista
-
-class Vista:
-    def mostrar_data(self, data):
-        print(f"Vista: Mostrando datos {data}")
-
-
-# Controlador
-
-class Controlador:
-    def __init__(self, modelo, vista):
-        self.modelo = modelo
-        self.vista = vista
-
-    def actualizar_vista(self):
-        data = self.modelo.get_data()
-        self.vista.mostrar_data(data)
-
-    def modificar_data(self, new_data):
-        self.modelo.set_data(new_data)
-        self.actualizar_vista()
-
-
-# Uso del MVC
-
-# Crear instancias de Modelo, Vista y Controlador
-modelo = Modelo(data="Datos iniciales")
-vista = Vista()
-controlador = Controlador(modelo, vista)
-
-# Inicializar la vista con los datos del modelo
-controlador.actualizar_vista()
-
-# Modificar los datos a través del controlador
-controlador.modificar_data(new_data="Nuevos datos")
-
-# Verificar que la vista se actualice automáticamente
-controlador.actualizar_vista()
-
-
-def print_directory():
-    # Especifica el directorio que deseas listar
-    directorio = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/"
-    # Construye el comando
-    comando = f"ls -l {directorio}"
-    # Ejecuta el comando y captura la salida
-    resultado = subprocess.run(comando, shell=True, check=True, stdout=subprocess.PIPE, text=True)
-    # Imprime la salida del comando
-    print(resultado.stdout)
-
-def get_dicom_field(ds, tag):
-    # Accede al campo utilizando la etiqueta numérica
-    field_value = ds[tag]
-
-    return field_value
-
-def plot_multiple_images():
-    class IndexTracker(object):
-        def __init__(self, ax, X):
-            self.ax = ax
-            ax.set_title('Scroll to Navigate through the DICOM Image Slices')
-
-            self.X = X
-            rows, cols, self.slices = X.shape
-            self.ind = self.slices//2
-
-            self.im = ax.imshow(self.X[:, :, self.ind], cmap='gray') #, cmap='gray'
-            self.update()
-
-        def onscroll(self, event):
-            print("%s %s" % (event.button, event.step))
-            if event.button == 'up':
-                self.ind = (self.ind + 1) % self.slices
-            else:
-                self.ind = (self.ind - 1) % self.slices
-            self.update()
-
-        def update(self):
-            self.im.set_data(self.X[:, :, self.ind])
-            ax.set_ylabel('Slice Number: %s' % self.ind)
-            self.im.axes.figure.canvas.draw()
-
-    fig, ax = plt.subplots(1,1)
-
-    print_directory()
-
-    plots = []
-
-    for f in glob.glob("/home/rainor/PycharmProjects/tfg/ImagenesDICOM/*.dcm"):
-        print(f.split("/")[-1])
-        filename = f.split("/")[-1]
-        ds = pydicom.dcmread(filename)
-        pixel_data = ds.pixel_array
-
-        print(type(ds.pixel_array))
-
-        #resolucion
-        resolution = (ds.Rows, ds.Columns)
-        print(resolution)
-
-        #(0x0028, 0x0106) (0x0028, 0x0107)
-
-        #Con Esto puedes saber si un campo esta en el ds
-        #print ([0x0028, 0x0106] in ds)
-        #tagSmallestImagePixelValue = [0x0028, 0x0106]
-        #tagLargestImagePixelValue = [0x0028, 0x0107]
-        #min_pixel_value = get_dicom_field(ds, tagSmallestImagePixelValue)
-        #max_pixel_value = get_dicom_field(ds, tagLargestImagePixelValue)
-        min_pixel_value = ds.pixel_array.min()
-        max_pixel_value = ds.pixel_array.max()
-        print("Minimo valor ", min_pixel_value ," Maximo valor ", max_pixel_value)
-
-        #primero intento de que no salga en negro
-        pixel_data_prueba = (ds.pixel_array*100)/65535
-        output_path16 = "output_imagemain16.tiff"
-        #imageio.imsave(output_path16, pixel_data_prueba, format='TIFF')
-
-
-        #Esta linea lo que hace es transformar los valores de positivos a negativos pero no se porque prefiere tener el pixel data en valores por debajo de 0
-        pixel_data = pixel_data*1+(-1024)
-        plots.append(pixel_data)
-
-        width, height = ds.Rows, ds.Columns
-        data = np.random.randint(min_pixel_value, max_pixel_value, size=(width, height), dtype=np.uint32)
-
-        # Especificar el nombre del archivo TIFF
-        output_name = "output_image.tiff"
-        output_path = os.path.join("/home/rainor/PycharmProjects/tfg/", output_name)
-
-        # Guardar la imagen como TIFF
-        imageio.imsave(output_path, pixel_data, format='tiff')
-        print(f"Imagen TIFF guardada en: {output_path}")
-
-        #print(f"Imagen TIFF guardada en: {output_path}")
-
-    y = np.dstack(plots)
-
-    tracker = IndexTracker(ax, y)
-
-    fig.canvas.mpl_connect('scroll_event', tracker.onscroll)
-    plt.figure()
-    plt.imshow(pixel_data)
-    plt.show()
+from vista.vista import Vista
+from modelo.modelo import Modelo
+from modelo.dicom_data import DicomData
+from controlador.controlador import Controlador
+from utils.dicom_utils import DicomUtils
 
 def main():
-    plot_multiple_images()
+    # Uso del MVC
+
+    #Esto esta mal ya que no tiene que tener acceso a utils solo deberia tener acceso al modelo y la vista y despues
+    #Borrar esto esto solo es para probar que lo que hice del controlador funciona, pensar mejor todo lo que tiene que
+    #Ver con el modelo y la organizacion del proyecto
+    ruta = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/2-2.dcm"
+
+
+    # Crear instancias de Modelo, Vista y Controlador
+    modelo = Modelo()
+    vista = Vista()
+    controlador = Controlador(modelo, vista)
+
+    # Inicializar la vista con los datos del modelo
+    #controlador.actualizar_vista()
+
+    #PRUEBAS CARGA DE UNA SOLA IMAGEN, MODIFICAR LA ULTIMA IMAGEN Y MOSTRAR LA ULTIMA IMAGEN
+    #ruta3 = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/2-1.dcm"
+    #controlador.cargar_imagen(ruta3)
+    # Modificar los datos a través del controlador
+    #controlador.convertir_imagen_ultimo()
+    # Verificar que la vista se actualice automáticamente
+    #controlador.mostrar_imagen_la_ultima()
+
+
+
+    #PRUEBAS CARGA DE MULTIPLES IMAGENES Y BORRADO DE TODAS LAS IMAGENES
+    # ruta1 = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/*.dcm"
+    #controlador.cargar_multiples_imagen(ruta1)
+    # Borrado de toda la lista
+    # controlador.show_lista()
+    #controlador.borrar_toda_la_lista()
+    #controlador.show_lista()
+
+
+
+    #PRUEBAS BORRADO DE LA ULTIMA DESPUES DE BORRAR LA ULTIMA SE MUESTRA DE DIFERENTE FORMA MOSTRAMOS LONGITUD DEL ARRAY
+    #ruta2 = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/*.dcm"
+    #controlador.cargar_multiples_imagen(ruta2)
+    # Modificar los datos a través del controlador
+    #controlador.convertir_imagen_todos()
+    # Verificar que la vista se actualice automáticamente
+    # controlador.show_lista()
+    #controlador.mostrar_imagen_la_ultima()
+    #BORRAMOS LA ULTIMA
+    # controlador.borrar_ultimo()
+    # controlador.show_lista()
+    # controlador.mostrar_imagen_la_ultima()
+
+
+
+    # controlador.borrar_toda_la_lista()
+
+
+    #pruebas posiciones
+    #ruta3 = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/*.dcm"
+    #controlador.cargar_multiples_imagen(ruta3)
+    # Modificar los datos a través del controlador
+    #controlador.convertir_imagen_todos()
+    # Verificar que la vista se actualice automáticamente
+    #controlador.mostrar_imagen_posicion(2)
+    #controlador.borrar_posicion(2)
+    #se muestra el 1-1002
+    #controlador.mostrar_imagen_posicion(2)
+
+    #controlador.borrar_toda_la_lista()
+
+    #prueba de ello es que si hago esto
+    #TODO ESTO FUNCA DE PUTA MADRE NICE
+    #ruta4 = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/1-1002.dcm"
+    #controlador.cargar_imagen(ruta4)
+    # Modificar los datos a través del controlador
+    #controlador.convertir_imagen_ultimo()
+    # Verificar que la vista se actualice automáticamente
+    #controlador.mostrar_imagen_la_ultima()
+
+
+
+    #controlador.borrar_toda_la_lista()
+
+
+
+    #PRUEBAS CARGA DE MULTIPLES IMAGENES, MODIFICAR Y MOSTRAR TODAS LAS IMAGENES
+    #ruta2 = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/*.dcm"
+    #controlador.cargar_multiples_imagen(ruta2)
+    # Modificar los datos a través del controlador
+    #controlador.convertir_imagen_todos()
+    # Verificar que la vista se actualice automáticamente
+    #controlador.mostrar_imagen_todos()
+
+    #BORRADO DE TODA LA LISTA PARA LA SIGUIENTE PRUEBA
+    # controlador.borrar_toda_la_lista()
+
+
+
+    #convertir_imagen_posicion
+    #ruta2 = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/*.dcm"
+    #controlador.cargar_multiples_imagen(ruta2)
+    # controlador.mostrar_imagen_posicion(2)
+    #DE ESTA FORMA SE VE QUE LA RESULTANTE CUANDO MUESTRO DE TRANSFORMAR TIENEN LOS MISMOS VALORES EN LAS DOS IMAGENES
+    #PERO DESPUES DE CONVERTIRLA TIENEN VALORES DIFERENTES CUANDO VUELVO A MOSTRAR
+    # Modificar los datos a través del controlador
+    #controlador.convertir_imagen_posicion(2)
+    # Verificar que la vista se actualice automáticamente
+    #controlador.mostrar_imagen_posicion(2)
+
 
 if __name__ == "__main__":
     main()
