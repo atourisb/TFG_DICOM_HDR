@@ -15,13 +15,10 @@ class Controlador:
 
     #PROBADO
     def cargar_imagen(self, ruta = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/2-2.dcm"):
-
-        print("ENTRO AQUI DE PANA cargar IMAGEN CONTROLADOR")
         self.modelo.crear_dicom_data(ruta)
 
     #PROBADO
     def cargar_multiples_imagen(self, ruta="/home/rainor/PycharmProjects/tfg/ImagenesDICOM/*.dcm"):
-        print("CONTROLADOR MULTIPLE PRUEBA ")
         self.modelo.crear_dicoms(ruta)
 
     #PROBADO
