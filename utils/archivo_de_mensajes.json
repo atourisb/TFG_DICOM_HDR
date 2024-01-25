@@ -1,0 +1,21 @@
+{
+    "//": "Mensajes Controlador",
+    "cargar_imagen_unica": "Cargando .dcm de la ruta indicada",
+    "cargar_imagenes_multiples": "Cargando todos los .dcm de la ruta indicada",
+
+    "visualizar_ultimo_dicom": "Mostrando el ultimo dicom cargado, original (Fig 1) y transformado (Fig 2)",
+    "visualizar_dicom_en_posicion": "Mostrando dicom cargado segun la posicion dada, original (Fig 1) y transformado (Fig 2)",
+    "visualizar_todos_los_dicom": "Mostrando todos los dicom cargados, original (Fig 1) y transformado (Fig 2)",
+
+    "transformar_ultimo_dicom": "Realizando la transformacion del ultimo dicom cargado de la lista",
+    "transformar_dicom_en_posicion": "Realizando la transformacion del dicom cargado segun su posicion en la lista",
+    "transformar_todos_los_dicom": "Realizando la transformacion de todos los dicom cargados en la lista",
+
+    "borrar_ultimo_dicom_cargado": "Realizando el borrado del ultimo dicom cargado de la lista",
+    "borrar_dicom_cargado_en_posicion": "Realizando la borrado del dicom cargado segun su posicion en la lista",
+    "borrar_todos_los_dicom_cargados_de_la_lista": "Realizando borrado de todos los dicom cargados en la lista",
+
+    "mostrar_cantidad_de_dicom_cargados": "Mostrando cantidad de dicom cargados en la lista",
+
+    "//": "Esto, es un comentario"
+}
