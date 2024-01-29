@@ -17,6 +17,21 @@ def main():
     # Inicializar la vista con los datos del modelo
     #controlador.actualizar_vista()
 
+
+
+    #VERIFICACION PARA MOSTRAR LA IMAGEN QUE SE MUESTRA YA QUE DIGO EN EL COMENTARIO QUE LA 1-1002 ES LA QUE SE MUESTRA
+    #DESPUES DEL BORRADO
+    ruta4 = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/1-1002.dcm"
+    controlador.cargar_unico_dicom(ruta4)
+    # Modificar los datos a través del controlador
+    controlador.transformar_ultimo_dicom()
+    # Verificar que la vista se actualice automáticamente
+    controlador.visualizar_ultimo_dicom()
+
+
+
+
+'''
     #PRUEBAS CARGA DE UNA SOLA IMAGEN, MODIFICAR LA ULTIMA IMAGEN Y MOSTRAR LA ULTIMA IMAGEN
     ruta1 = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/2-1.dcm"
     controlador.cargar_unico_dicom(ruta1)
@@ -109,6 +124,7 @@ def main():
     controlador.transformar_dicom_en_posicion(2)
     # Verificar que la vista se actualice automáticamente
     controlador.visualizar_dicom_en_posicion(2)
+'''
 
 
 if __name__ == "__main__":
