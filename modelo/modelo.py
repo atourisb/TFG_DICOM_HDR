@@ -1,6 +1,7 @@
 from modelo.dicom_data import DicomData
 from utils.dicom_utils import DicomUtils
 from utils.image_converter import ImageConverter
+from excepciones.excepciones import *
 
 class Modelo():
 
@@ -34,32 +35,65 @@ class Modelo():
             self.lista_dicom.append(self.dicom_data)
 
     def devolver_ultimo_dicom_data_de_la_lista(self):
+        if len(self.lista_dicom) == 0:
+            raise ListaVaciaError()
+
         return self.lista_dicom[-1]
 
     def devolver_dicom_data_en_posicion_de_la_lista(self, posicion):
+        if len(self.lista_dicom) == 0:
+            raise ListaVaciaError()
+        elif posicion < 0 or posicion > len(self.lista_dicom):
+            raise PosicionInvalidaError(posicion)
+
         return self.lista_dicom[posicion]
 
     def devolver_todos_los_dicom_data_de_la_lista(self):
+        if len(self.lista_dicom) == 0:
+            raise ListaVaciaError()
+
         return self.lista_dicom
 
     def transformar_ultimo_dicom_data_de_la_lista(self):
+        if len(self.lista_dicom) == 0:
+            raise ListaVaciaError()
+
         data = self.lista_dicom[-1]
         self.lista_dicom[-1] = self.image_converter.dicom_converter_to_tiff(data)
 
     def transformar_dicom_data_en_posicion_de_la_lista(self, posicion):
+        if len(self.lista_dicom) == 0:
+            raise ListaVaciaError()
+        elif posicion < 0 or posicion > len(self.lista_dicom):
+            raise PosicionInvalidaError(posicion)
+
         data = self.lista_dicom[posicion]
         self.lista_dicom[posicion] = self.image_converter.dicom_converter_to_tiff(data)
 
     def transformar_todos_los_dicom_data_de_la_lista(self):
+        if len(self.lista_dicom) == 0:
+            raise ListaVaciaError()
+
         for i, element in enumerate(self.lista_dicom):
-            # Modifica cada elemento según sea necesario
-            self.lista_dicom[i] = self.image_converter.dicom_converter_to_tiff(element)
+            if ((self.lista_dicom[i].get_pixel_data_modified()).sum() == 0):
+                self.lista_dicom[i] = self.image_converter.dicom_converter_to_tiff(element)
 
     def borrar_ultimo_dicom_data_de_la_lista(self):
+        if len(self.lista_dicom) == 0:
+            raise ListaVaciaError()
+
         del self.lista_dicom[-1]
 
     def borrar_dicom_data_en_posicion_de_la_lista(self, posicion):
+        if len(self.lista_dicom) == 0:
+            raise ListaVaciaError()
+        elif posicion < 0 or posicion > len(self.lista_dicom):
+            raise PosicionInvalidaError(posicion)
+
         del self.lista_dicom[posicion]
 
     def borrar_todos_los_dicom_data_de_la_lista(self):
+        if len(self.lista_dicom) == 0:
+            raise ListaVaciaError()
+
         self.lista_dicom.clear()

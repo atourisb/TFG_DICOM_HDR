@@ -8,6 +8,7 @@ import glob
 import imageio
 import numpy as np
 from utils.indexTracker import IndexTracker
+from excepciones.excepciones import *
 
 class DicomUtils:
 
@@ -23,12 +24,12 @@ class DicomUtils:
         """
 
         ruta = Path(path)
-        if ruta.exists() is False:
-            raise Exception(f"'{ruta}' no existe esta ruta")
-        elif ruta.is_file() is False:
-            raise Exception(f"'{ruta}' no es un archivo")
+        if not ruta.exists():
+            raise ArchivoNoEncontradoError(ruta)
+        elif not ruta.is_file():
+            raise NoEsArchivoError(ruta)
         elif ruta.suffix.lower() != '.dcm':
-            raise Exception('El archivo de entrada deberia ser un DICOM')
+            raise ExtensionIncorrectaError(ruta.suffix.lower())
 
         # Carga la informacion de la imagen leida y su pixel data
         ds = pydicom.dcmread(ruta, force=True)
@@ -51,10 +52,10 @@ class DicomUtils:
         directorio = Path(directorio)
         dcm_files = glob.glob(os.path.join(directorio, '*.dcm'))
 
-        if directorio.exists() is False:
-            raise Exception(f"'{directorio}' no existe esta ruta")
+        if not directorio.exists():
+            raise DirectorioNoExisteError(directorio)
         elif not dcm_files:
-            raise Exception(f"No se encontraron archivos .dcm en el directorio {directorio}.")
+            raise ArchivosDCMNoEncontradosError(directorio)
 
         #self.print_directory()
         plots = []

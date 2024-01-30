@@ -22,15 +22,26 @@ def main():
     #VERIFICACION PARA MOSTRAR LA IMAGEN QUE SE MUESTRA YA QUE DIGO EN EL COMENTARIO QUE LA 1-1002 ES LA QUE SE MUESTRA
     #DESPUES DEL BORRADO
     ruta4 = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/1-1002.dcm"
+    #ruta4 = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/casa"
+    #ruta4 = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/TextFile.txt"
     controlador.cargar_unico_dicom(ruta4)
     # Modificar los datos a través del controlador
     controlador.transformar_ultimo_dicom()
     # Verificar que la vista se actualice automáticamente
     controlador.visualizar_ultimo_dicom()
 
-
-
-
+    #---------------- PRUEBA DE EXCEPCIONES-----------------
+    #PRUEBA ERROR DAR UNA POSICION NO VALIDA
+    ruta3 = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/*.dcm"
+    controlador.cargar_multiples_dicom(ruta3)
+    # Modificar los datos a través del controlador
+    controlador.transformar_todos_los_dicom()
+    # Verificar que la vista se actualice automáticamente
+    controlador.visualizar_dicom_en_posicion(12)
+    controlador.borrar_dicom_cargado_en_posicion(12)
+    #se muestra el 1-1002
+    controlador.visualizar_dicom_en_posicion(12)
+    
 '''
     #PRUEBAS CARGA DE UNA SOLA IMAGEN, MODIFICAR LA ULTIMA IMAGEN Y MOSTRAR LA ULTIMA IMAGEN
     ruta1 = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/2-1.dcm"
