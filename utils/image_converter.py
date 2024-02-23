@@ -8,6 +8,9 @@ from utils.dicom_utils import DicomUtils
 
 class ImageConverter:
 
+    #usar el ds y mirar con unique los valores del array
+    #4 bits de profundidad y comprar con el mio
+
     def dicom_converter_to_tiff(self, dicom: dicom_data):
 
         # Cargamos el pixel_array de la imagen original para ser procesada
@@ -100,10 +103,15 @@ class ImageConverter:
         # Aplicamos LUTs: modalidad LUT -> VOI LUT
         # Devuelve la imagen procesada, in 16bit
 
+        # ds = dicom.get_ds()
+        # for element in ds:
+        #     print(element)
+        print ("minimo ", dicom.get_min_pixel_value())
+        print("maximo ", dicom.get_max_pixel_value())
+
         # LUTs: Modality LUT -> VOI LUT -> Presentation LUT
         # Aplicamos la funcion apply_modality_lut teniendo en cuenta los valores Rescale slope, Rescale Intercept
         pixel_data_modified = self.aplicar_modalidad_lut(dicom)
-
 
         # Duda sobre si esos valores se tienen que normalizar y no se como ya que al final pasa lo mismo que cuando usas los 255 es ir buscandolos a pelo
         # si los valores que usas de ventana son el centro 65535/2 y la anchura 65535 se ve la misma imagen que la inicial
@@ -116,9 +124,9 @@ class ImageConverter:
         # Esto es probable que se vaya del codigo ya que la idea es elegir que opcion queremos de alguna forma y con cambiar el signo al normalizar ya llega
 
         #if dicom.get_photometric_interpretation() is not None and dicom.get_photometric_interpretation() == "MONOCHROME1":
-            # Este valor de PhotometricInterpretation se usa para saber si los valores mas altos de la imagen representan el blanco o el negro.
-            # MONOCHROME1 representa que los valores mas altos son los valores oscuros. Por tanto lo que hacemos aqui es invertirlos.
-            # NOT add minus directly
+            #Este valor de PhotometricInterpretation se usa para saber si los valores mas altos de la imagen representan el blanco o el negro.
+            #MONOCHROME1 representa que los valores mas altos son los valores oscuros. Por tanto lo que hacemos aqui es invertirlos.
+            #NOT add minus directly
             #pixel_data_modified = np.max(pixel_data_modified) - pixel_data_modified
 
         pixel_data_modified = pixel_data_modified.astype('uint16')

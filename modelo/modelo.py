@@ -1,3 +1,7 @@
+import os
+
+import imageio
+
 from modelo.dicom_data import DicomData
 from utils.dicom_utils import DicomUtils
 from utils.image_converter import ImageConverter
@@ -83,6 +87,7 @@ class Modelo():
             raise ListaVaciaError()
 
         del self.lista_dicom[-1]
+        return True
 
     def borrar_dicom_data_en_posicion_de_la_lista(self, posicion):
         if len(self.lista_dicom) == 0:
@@ -91,9 +96,49 @@ class Modelo():
             raise PosicionInvalidaError(posicion)
 
         del self.lista_dicom[posicion]
+        return True
 
     def borrar_todos_los_dicom_data_de_la_lista(self):
         if len(self.lista_dicom) == 0:
             raise ListaVaciaError()
 
         self.lista_dicom.clear()
+        return True
+
+    def guardar_ultimo_dicom_data_de_la_lista(self):
+        if len(self.lista_dicom) == 0:
+            raise ListaVaciaError()
+
+        data = self.lista_dicom[-1]
+
+        output_name = f"output_image{len(self.lista_dicom)}.tiff"
+        output_path = os.path.join("/home/rainor/PycharmProjects/tfg/salida/", output_name)
+        imageio.imsave(output_path, data.get_pixel_data_modified(), format='tiff')
+        print(f"Imagen TIFF guardada en: {output_path}")
+
+    def guardar_dicom_data_en_posicion_de_la_lista(self, posicion):
+        if len(self.lista_dicom) == 0:
+            raise ListaVaciaError()
+        elif posicion < 0 or posicion > len(self.lista_dicom):
+            raise PosicionInvalidaError(posicion)
+
+        data = self.lista_dicom[posicion]
+
+        output_name = f"output_image{posicion}.tiff"
+        output_path = os.path.join("/home/rainor/PycharmProjects/tfg/salida/", output_name)
+        imageio.imsave(output_path, data.get_pixel_data_modified(), format='tiff')
+        print(f"Imagen TIFF guardada en: {output_path}")
+
+    def guardar_todos_los_dicom_data_de_la_lista(self):
+        if len(self.lista_dicom) == 0:
+            raise ListaVaciaError()
+
+        for i, element in enumerate(self.lista_dicom):
+            if ((self.lista_dicom[i].get_pixel_data_modified()).sum() != 0):
+
+                data = self.lista_dicom[i]
+
+                output_name = f"output_image{i}.tiff"
+                output_path = os.path.join("/home/rainor/PycharmProjects/tfg/salida/", output_name)
+                imageio.imsave(output_path, data.get_pixel_data_modified(), format='tiff')
+                print(f"Imagen TIFF guardada en: {output_path}")

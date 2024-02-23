@@ -17,5 +17,9 @@
 
     "mostrar_cantidad_de_dicom_cargados": "Mostrando cantidad de dicom cargados en la lista",
 
+    "guardar_ultimo_dicom": "Realizando el guardado del ultimo dicom cargado de la lista",
+    "guardar_dicom_en_posicion": "Realizando el guardado del dicom cargado segun su posicion en la lista",
+    "guardar_todos_los_dicom": "Realizando el guardado de todos los dicom cargados en la lista",
+
     "//": "Esto, es un comentario"
 }

@@ -120,3 +120,28 @@ class Controlador:
         print(self.mensajes['mostrar_cantidad_de_dicom_cargados'])
         lista = self.modelo.devolver_todos_los_dicom_data_de_la_lista()
         self.vista.mostrar_cantidad_de_la_lista(lista)
+
+    def guardar_ultimo_dicom(self):
+        try:
+            print(self.mensajes['guardar_ultimo_dicom'])
+            self.modelo.guardar_ultimo_dicom_data_de_la_lista()
+        except ListaVaciaError as e:
+            print("Error", e)
+            raise
+
+    def guardar_dicom_en_posicion(self, posicion):
+        try:
+            print(self.mensajes['guardar_dicom_en_posicion'])
+            self.modelo.guardar_dicom_data_en_posicion_de_la_lista(posicion)
+        except (ListaVaciaError, PosicionInvalidaError) as e:
+            print("Error", e)
+            raise
+
+
+    def guardar_todos_los_dicom(self):
+        try:
+            print(self.mensajes['guardar_todos_los_dicom'])
+            self.modelo.guardar_todos_los_dicom_data_de_la_lista()
+        except ListaVaciaError as e:
+            print("Error", e)
+            raise

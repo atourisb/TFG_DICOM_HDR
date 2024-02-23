@@ -1,13 +1,8 @@
 import os
 import pydicom
-import io
 from pathlib import Path
 import subprocess
-import matplotlib.pyplot as plt
 import glob
-import imageio
-import numpy as np
-from utils.indexTracker import IndexTracker
 from excepciones.excepciones import *
 
 class DicomUtils:
