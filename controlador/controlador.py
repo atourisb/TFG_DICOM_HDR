@@ -5,6 +5,9 @@ from modelo.dicom_data import DicomData
 from vista.vista import Vista
 import json
 from excepciones.excepciones import *
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 
 # Controlador
 #Puedo hacer una cola o una pila para ver y mostrar las imagenes y asi tener persistencia? una array y poder moverte borrar y tal despues de cargar las imagenes y leerlas o algo.
@@ -22,6 +25,9 @@ class Controlador:
                 self.mensajes = json.load(file)
         except FileNotFoundError:
             raise ArchivoNoEncontradoError(ruta_archivo)
+
+    def mostrar_ventana(self):
+        self.vista.mostrar_ventana()
 
     def cargar_unico_dicom(self, ruta):
         try:

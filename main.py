@@ -1,7 +1,9 @@
 from vista.vista import Vista
 from modelo.modelo import Modelo
 from controlador.controlador import Controlador
-import keyboard
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 
 def pausar_codigo():
     input('Press <ENTER> to continue')
@@ -24,13 +26,18 @@ def main():
     ruta4 = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/2-3.dcm"
     #ruta4 = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/casa"
     #ruta4 = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/TextFile.txt"
+
+    #controlador.mostrar_ventana()
+
     controlador.cargar_unico_dicom(ruta4)
     # Modificar los datos a través del controlador
     controlador.transformar_ultimo_dicom()
     # Guardar los datos a traves del controlador
     controlador.guardar_ultimo_dicom()
     # Verificar que la vista se actualice automáticamente
-    controlador.visualizar_ultimo_dicom()
+    #controlador.visualizar_ultimo_dicom()
+    vista.show_all()
+    Gtk.main()
 
 
     #---------------- PRUEBA DE GUARDO TODOS-----------------
