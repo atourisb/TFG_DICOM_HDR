@@ -1,8 +1,11 @@
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GdkPixbuf, Gdk
+from gi.repository import Gtk, GdkPixbuf, Gdk, GLib
 import glob
 import os
+import numpy as np
+import cv2
+import matplotlib.pyplot as plt
 from pathlib import Path
 
 # Colocar segunda imagen y replicar movimientos conectando el segundo viewport con los mismos metodos que el otro viewport(?) creo que asi
@@ -77,6 +80,23 @@ class ImageWindow(Gtk.Window):
         self.button_delete.set_image(Gtk.Image.new_from_icon_name("user-trash-symbolic", Gtk.IconSize.BUTTON))
         self.box_botones.pack_start(self.button_delete, False, False, 10)
 
+        # Crear una barra de desplazamiento para window_center
+        self.scale_center = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL)
+        self.scale_center.set_range(0, 255)
+        self.scale_center.set_value(127)  # Valor inicial
+        self.scale_center.set_draw_value(False)
+        self.scale_center.connect("value-changed", self.on_scale_changed)
+        self.box_botones.pack_start(self.scale_center, True, True, 0)
+
+        # Crear una barra de desplazamiento para window_width
+        self.scale_width = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL)
+        self.scale_width.set_range(0, 255)
+        self.scale_width.set_value(255)  # Valor inicial
+        self.scale_width.set_draw_value(False)
+        self.scale_width.connect("value-changed", self.on_scale_changed)
+        self.box_botones.pack_start(self.scale_width, True, True, 0)
+
+        self.imagecv = None
         self.original_pixbuf = None
         self.displayed_pixbuf = None
 
@@ -95,6 +115,7 @@ class ImageWindow(Gtk.Window):
         self.box2.pack_start(self.scrolledwindow, True, True, 0)
 
         # Segunda Imagen ---------------------------------------------
+        self.imagecv2 = None
         self.original_pixbuf2 = None
         self.displayed_pixbuf2 = None
 
@@ -136,6 +157,7 @@ class ImageWindow(Gtk.Window):
         self.ratio = 3.
         self.posicion_lista = 0
         self.panning = False
+        self.timeout_id = None
 
         # Mostrar todos los elementos de la ventana
         self.show_all()
@@ -150,10 +172,15 @@ class ImageWindow(Gtk.Window):
 
     def load_image(self, file_path):
         try:
+            self.imagecv = cv2.imread(file_path)
             self.original_pixbuf = GdkPixbuf.Pixbuf.new_from_file(file_path)
             self.displayed_pixbuf = GdkPixbuf.Pixbuf.new_from_file(file_path)
             self.image = Gtk.Image.new_from_pixbuf(self.displayed_pixbuf)  # added
-            self.image2 = Gtk.Image.new_from_pixbuf(self.displayed_pixbuf)  # added
+
+            self.imagecv2 = cv2.imread(file_path)
+            self.original_pixbuf2 = GdkPixbuf.Pixbuf.new_from_file(file_path)
+            self.displayed_pixbuf2 = GdkPixbuf.Pixbuf.new_from_file(file_path)
+            self.image2 = Gtk.Image.new_from_pixbuf(self.displayed_pixbuf2)  # added
             # scaled_pixbuf = pixbufdelaimagen.scale_simple(600, 400, GdkPixbuf.InterpType.BILINEAR)
             # image.set_from_pixbuf(scaled_pixbuf)
         except Exception as e:
@@ -173,7 +200,10 @@ class ImageWindow(Gtk.Window):
             self.original_pixbuf = objeto.get_original_pixbuf()
             self.displayed_pixbuf = objeto.get_displayed_pixbuf()
             self.image = objeto.get_image()
-            self.image2 = Gtk.Image.new_from_pixbuf(self.displayed_pixbuf)  # added
+
+            self.original_pixbuf2 = objeto.get_original_pixbuf()
+            self.displayed_pixbuf2 = objeto.get_displayed_pixbuf()
+            self.image2 = Gtk.Image.new_from_pixbuf(self.displayed_pixbuf2)  # added
             #self.image2 = objeto.get_image()
 
             print(self.image)
@@ -187,7 +217,7 @@ class ImageWindow(Gtk.Window):
             self.viewport.add(self.image)
             self.viewport.show_all()
 
-            self.viewport2.set_size_request(self.displayed_pixbuf.get_width(), self.displayed_pixbuf.get_height())
+            self.viewport2.set_size_request(self.displayed_pixbuf2.get_width(), self.displayed_pixbuf2.get_height())
             self.viewport2.add(self.image2)
             self.viewport2.show_all()
 
@@ -268,7 +298,7 @@ class ImageWindow(Gtk.Window):
             self.viewport.add(self.image)
             self.viewport.show_all()
 
-            self.viewport2.set_size_request(self.displayed_pixbuf.get_width(), self.displayed_pixbuf.get_height())
+            self.viewport2.set_size_request(self.displayed_pixbuf2.get_width(), self.displayed_pixbuf2.get_height())
             self.viewport2.add(self.image2)
             self.viewport2.show_all()
 
@@ -455,9 +485,14 @@ class ImageWindow(Gtk.Window):
         scaled_height = int(self.original_pixbuf.get_height() * self.zoom_factor)
         displayed_pixbuf = self.original_pixbuf.scale_simple(scaled_width, scaled_height, GdkPixbuf.InterpType.BILINEAR)
 
+        # Escalar la imagen según el factor de zoom
+        scaled_width = int(self.original_pixbuf.get_width() * self.zoom_factor)
+        scaled_height = int(self.original_pixbuf.get_height() * self.zoom_factor)
+        displayed_pixbuf2 = self.original_pixbuf.scale_simple(scaled_width, scaled_height, GdkPixbuf.InterpType.BILINEAR)
+
         # Mostrar la imagen actualizada
         self.image.set_from_pixbuf(displayed_pixbuf)
-        self.image2.set_from_pixbuf(displayed_pixbuf)
+        self.image2.set_from_pixbuf(displayed_pixbuf2)
 
     def on_viewport_button_press(self, widget, event):
         if event.type == Gdk.EventType.BUTTON_PRESS and event.button == 1:
@@ -484,6 +519,75 @@ class ImageWindow(Gtk.Window):
                     v_adjustment2.set_value(v_adjustment2.get_value() + (self.prev_y - y))
                     self.prev_x = x
                     self.prev_y = y
+
+
+    def on_scale_changed(self, scale):
+        # Reiniciar el temporizador si ya estaba activo
+        if self.timeout_id:
+            GLib.source_remove(self.timeout_id)
+
+        # Activar el temporizador para aplicar el windowing después de un breve retraso
+        self.timeout_id = GLib.timeout_add(200, self.apply_windowing_delayed)
+
+    def apply_windowing_delayed(self):
+        # Obtener los valores de window_center y window_width de las barras de desplazamiento
+        window_center = self.scale_center.get_value()
+        window_width = self.scale_width.get_value()
+
+        # Aplicar windowing a la imagen cargada
+        if hasattr(self, 'image'):
+            windowed_image = self.apply_windowing(self.imagecv, window_center, window_width)
+            windowed_image2 = self.apply_windowing(self.imagecv2, window_center, window_width)
+
+            self.displayed_pixbuf = self.show_image(windowed_image)
+            self.displayed_pixbuf2 = self.show_image(windowed_image2)
+            self.image.set_from_pixbuf(self.displayed_pixbuf)
+            self.image2.set_from_pixbuf(self.displayed_pixbuf2)
+
+        # Reiniciar el ID del temporizador
+        self.timeout_id = None
+
+        # Detener la propagación del evento
+        return False
+
+    def apply_windowing(self, image, window_center, window_width):
+        # Calcular los límites del rango de píxeles
+        min_value = window_center - (window_width / 2)
+        max_value = window_center + (window_width / 2)
+
+        #pixels = self.get_image_pixels(image)
+
+        print("movido")
+        # Aplicar windowing a la imagen
+        windowed_image = np.clip((image - min_value) / window_width * 255, 0, 255).astype(np.uint8)
+        return windowed_image
+
+    def get_image_pixels(self, image):
+        # Obtener el objeto GdkPixbuf.Pixbuf de la imagen Gtk.Image
+        pixbuf = image.get_pixbuf()
+
+        # Obtener los datos de píxeles del GdkPixbuf.Pixbuf como una cadena de bytes
+        pixel_bytes = pixbuf.get_pixels()
+
+        # Convertir la cadena de bytes en una matriz NumPy
+        pixels = np.frombuffer(pixel_bytes, dtype=np.uint8)
+
+        # Redimensionar la matriz para que coincida con las dimensiones de la imagen
+        width = pixbuf.get_width()
+        height = pixbuf.get_height()
+        channels = pixbuf.get_n_channels()
+        pixels = pixels.reshape((height, width, channels))
+
+        return pixels
+
+    def show_image(self, image):
+        # Convertir la imagen a formato Pixbuf para mostrarla en el área de dibujo
+        print("mvodio")
+        height, width, channels = image.shape
+        rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        pixbuf = GdkPixbuf.Pixbuf.new_from_data(rgb_image.flatten(), GdkPixbuf.Colorspace.RGB, False, 8, width, height, width * channels, None, None)
+
+        return pixbuf
 
 win = ImageWindow()
 win.connect("destroy", Gtk.main_quit)
