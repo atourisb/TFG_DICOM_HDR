@@ -19,9 +19,13 @@ class ModeloVista:
     image: Gtk.Image
 
     def __init__(self, file_path):
+        self.imagecv = cv2.imread(file_path)
         self.original_pixbuf = GdkPixbuf.Pixbuf.new_from_file(file_path)
         self.displayed_pixbuf = GdkPixbuf.Pixbuf.new_from_file(file_path)
         self.image = Gtk.Image.new_from_pixbuf(self.displayed_pixbuf)
+
+    def get_image_numpy(self):
+        return self.imagecv
 
     def get_original_pixbuf(self):
         return self.original_pixbuf
@@ -197,10 +201,12 @@ class ImageWindow(Gtk.Window):
 
     def load_image_conobjeto(self, objeto):
         try:
+            self.imagecv = objeto.get_image_numpy()
             self.original_pixbuf = objeto.get_original_pixbuf()
             self.displayed_pixbuf = objeto.get_displayed_pixbuf()
             self.image = objeto.get_image()
 
+            self.imagecv2 = objeto.get_image_numpy()
             self.original_pixbuf2 = objeto.get_original_pixbuf()
             self.displayed_pixbuf2 = objeto.get_displayed_pixbuf()
             self.image2 = Gtk.Image.new_from_pixbuf(self.displayed_pixbuf2)  # added
@@ -308,6 +314,11 @@ class ImageWindow(Gtk.Window):
         dialog.destroy()
 
     def add_filters(self, dialog):
+        filter_any = Gtk.FileFilter()
+        filter_any.set_name("Any files")
+        filter_any.add_pattern("*")
+        dialog.add_filter(filter_any)
+
         filter_text = Gtk.FileFilter()
         filter_text.set_name("Text files")
         filter_text.add_mime_type("text/plain")
@@ -317,11 +328,6 @@ class ImageWindow(Gtk.Window):
         filter_py.set_name("Python files")
         filter_py.add_mime_type("text/x-python")
         dialog.add_filter(filter_py)
-
-        filter_any = Gtk.FileFilter()
-        filter_any.set_name("Any files")
-        filter_any.add_pattern("*")
-        dialog.add_filter(filter_any)
 
     #Hacer boton de borrar la lista y boton de borrar una foto
     def on_button_delete_lista_clicked(self, widget):

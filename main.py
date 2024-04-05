@@ -36,7 +36,9 @@ def main():
     controlador.guardar_ultimo_dicom()
     # Verificar que la vista se actualice automáticamente
     #controlador.visualizar_ultimo_dicom()
-    vista.show_all()
+    #vista.show_all()
+    vista = Vista()
+    vista.connect("destroy", Gtk.main_quit)
     Gtk.main()
 
 
