@@ -15,7 +15,9 @@ from pathlib import Path
 
 class Vista(Gtk.Window):
 
-    def __init__(self):
+    def __init__(self, controlador):
+
+        self.controlador = controlador
 
         # Creacion de la ventana principal de la vista
 
@@ -101,9 +103,9 @@ class Vista(Gtk.Window):
 
         # --------------------------------------------- Primera imagen ------------------------------------------------#
 
-        self.image_numpy1 = None
-        self.original_pixbuf1 = None
-        self.displayed_pixbuf1 = None
+        self.imagecv_8_bits = None
+        self.original_pixbuf_8_bits = None
+        self.displayed_pixbuf_8_bits = None
 
         # Crear el widget para representar la imagen
         self.scrolledwindow = Gtk.ScrolledWindow()  # added
@@ -114,9 +116,9 @@ class Vista(Gtk.Window):
         self.box2.pack_start(self.scrolledwindow, True, True, 0)
 
         # --------------------------------------------- Segunda imagen ------------------------------------------------#
-        self.image_numpy2 = None
-        self.original_pixbuf2 = None
-        self.displayed_pixbuf2 = None
+        self.imagecv_16_bits = None
+        self.original_pixbuf_16_bits = None
+        self.displayed_pixbuf_16_bits = None
 
         # Crear el widget para representar la imagen
         self.scrolledwindow2 = Gtk.ScrolledWindow()  # added
@@ -175,24 +177,43 @@ class Vista(Gtk.Window):
         self.button5.hide()
         self.button_delete.hide()
 
+    # Mirar lo que hice mal de la imagen i la imagencv y checkear que este todo correcto
+
+
 #-------------------------------------------- METODOS DE LA NUEVA VISTA -----------------------------------------------#
 
 #-------------------------------------------- METODOS DE CARGA DE IMAGENES --------------------------------------------#
+
+    #Creamos el objeto del modelo vist_data llamando a los metodos del controlador
+    def crear_vista_data(self, path):
+
+        # Osea elegimos un dicom, la vista manda la orden al controlador de convertir el dicom a .tiff pero obtenemos 2 uno de 8 y otro de 16
+        # Despues de esto la vista procede a cargarlo y obtener las modificaciones necesarias para poder
+
+        #La tupla contiene los paths de la imagen en 8 bits y en 16 bits para poder representar y crear el objeto vista_data
+        tuple = self.controlador.transformacion_y_guardado_vista(path)
+
+        vista_data = ModeloVista(tuple[0], tuple[1])
+
+        return vista_data
+
+
+
 
     # Metodos para cargar imagenes y carpetas que contengan imagenes
 
     # Metodo para cargar una imagen
     def load_image(self, file_path):
         try:
-            self.image_numpy1 = cv2.imread(file_path)
-            self.original_pixbuf = GdkPixbuf.Pixbuf.new_from_file(file_path)
-            self.displayed_pixbuf = GdkPixbuf.Pixbuf.new_from_file(file_path)
-            self.image = Gtk.Image.new_from_pixbuf(self.displayed_pixbuf)  # added
+            self.imagecv_8_bits = cv2.imread(file_path)
+            self.original_pixbuf_8_bits = GdkPixbuf.Pixbuf.new_from_file(file_path)
+            self.displayed_pixbuf_8_bits = GdkPixbuf.Pixbuf.new_from_file(file_path)
+            self.image_8_bits = Gtk.Image.new_from_pixbuf(self.displayed_pixbuf_8_bits)  # added
 
-            self.image_numpy2 = cv2.imread(file_path)
-            self.original_pixbuf2 = GdkPixbuf.Pixbuf.new_from_file(file_path)
-            self.displayed_pixbuf2 = GdkPixbuf.Pixbuf.new_from_file(file_path)
-            self.image2 = Gtk.Image.new_from_pixbuf(self.displayed_pixbuf2)  # added
+            self.imagecv_16_bits = cv2.imread(file_path)
+            self.original_pixbuf_16_bits = GdkPixbuf.Pixbuf.new_from_file(file_path)
+            self.displayed_pixbuf_16_bits = GdkPixbuf.Pixbuf.new_from_file(file_path)
+            self.image_16_bits = Gtk.Image.new_from_pixbuf(self.displayed_pixbuf_16_bits)  # added
             # scaled_pixbuf = pixbufdelaimagen.scale_simple(600, 400, GdkPixbuf.InterpType.BILINEAR)
             # image.set_from_pixbuf(scaled_pixbuf)
         except Exception as e:
@@ -200,32 +221,30 @@ class Vista(Gtk.Window):
 
 
     # Metodo que nos permite cargar una carpeta y todas las imagenes a la vez que contenga
-    def load_image_conobjeto(self, objeto):
+    def load_image_vista_data(self, vista_data):
         try:
-            self.image_numpy1 = objeto.get_image_numpy()
-            self.original_pixbuf = objeto.get_original_pixbuf()
-            self.displayed_pixbuf = objeto.get_displayed_pixbuf()
-            self.image = objeto.get_image()
+            self.imagecv_8_bits = vista_data.get_image_numpy_8_bits()
+            self.original_pixbuf_8_bits = vista_data.get_original_pixbuf_8_bits()
+            self.displayed_pixbuf_8_bits = vista_data.get_displayed_pixbuf_8_bits()
+            self.image_8_bits = vista_data.get_image_8_bits()
 
-            self.image_numpy2 = objeto.get_image_numpy()
-            self.original_pixbuf2 = objeto.get_original_pixbuf()
-            self.displayed_pixbuf2 = objeto.get_displayed_pixbuf()
-            self.image2 = Gtk.Image.new_from_pixbuf(self.displayed_pixbuf2)  # added
-            #self.image2 = objeto.get_image()
+            self.imagecv_16_bits = vista_data.get_image_numpy_16_bits()
+            self.original_pixbuf_16_bits = vista_data.get_original_pixbuf_16_bits()
+            self.displayed_pixbuf_16_bits = vista_data.get_displayed_pixbuf_16_bits()
+            self.image_16_bits = vista_data.get_image_16_bits()
 
-            print(self.image)
-            print(objeto.get_image())
             print("Numero elementos de la lista: ", len(self.lista_imagenes))
             print("Posicion de la Lista: ", self.posicion_lista)
-            #self.image.set_from_pixbuf(pixbuf)
 
+            #Lo aplica en ambas imagenes
             self.scale_image()
-            self.viewport.set_size_request(self.displayed_pixbuf.get_width(), self.displayed_pixbuf.get_height())
-            self.viewport.add(self.image)
+
+            self.viewport.set_size_request(self.displayed_pixbuf_8_bits.get_width(), self.displayed_pixbuf_8_bits.get_height())
+            self.viewport.add(self.image_8_bits)
             self.viewport.show_all()
 
-            self.viewport2.set_size_request(self.displayed_pixbuf2.get_width(), self.displayed_pixbuf2.get_height())
-            self.viewport2.add(self.image2)
+            self.viewport2.set_size_request(self.displayed_pixbuf_16_bits.get_width(), self.displayed_pixbuf_16_bits.get_height())
+            self.viewport2.add(self.image_16_bits)
             self.viewport2.show_all()
 
         except Exception as e:
@@ -233,8 +252,11 @@ class Vista(Gtk.Window):
 
     # Funcion usada
     def scale_image(self):
-        self.displayed_pixbuf = self.original_pixbuf.scale_simple(self.original_pixbuf.get_width() * self.ratio,
-                                                                  self.original_pixbuf.get_height() * self.ratio, 2)
+        self.displayed_pixbuf_8_bits = self.original_pixbuf_8_bits.scale_simple(self.original_pixbuf_8_bits.get_width() * self.ratio,
+                                                                  self.original_pixbuf_8_bits.get_height() * self.ratio, 2)
+
+        self.displayed_pixbuf_16_bits = self.original_pixbuf_16_bits.scale_simple(self.original_pixbuf_16_bits.get_width() * self.ratio,
+                                                                  self.original_pixbuf_16_bits.get_height() * self.ratio, 2)
 
 #----------------------------------------------------------------------------------------------------------------------#
 
@@ -274,15 +296,10 @@ class Vista(Gtk.Window):
         if response == Gtk.ResponseType.OK:
             print("Open clicked")
             print("File selected: " + dialog.get_filename())
-            self.load_image(dialog.get_filename())
-            self.scale_image()
-            self.viewport.set_size_request(self.displayed_pixbuf.get_width(), self.displayed_pixbuf.get_height())
-            self.viewport.add(self.image)
-            self.viewport.show_all()
 
-            self.viewport2.set_size_request(self.displayed_pixbuf2.get_width(), self.displayed_pixbuf2.get_height())
-            self.viewport2.add(self.image2)
-            self.viewport2.show_all()
+            vista_data = self.crear_vista_data(dialog.get_filename())
+
+            self.load_image_vista_data(vista_data)
 
         elif response == Gtk.ResponseType.CANCEL:
             print("Cancel clicked")
@@ -315,18 +332,18 @@ class Vista(Gtk.Window):
             print("Select clicked")
             print("Folder selected: " + dialog.get_filename())
 
-            path = dialog.get_filename() + ("/*.tiff")
+            path = dialog.get_filename() + ("/*.dcm")
             print(path)
 
             directorio, patron = os.path.split(path)
             print(directorio)
             directorio = Path(directorio)
-            tiff_files = glob.glob(os.path.join(directorio, '*.tiff'))
+            tiff_files = glob.glob(os.path.join(directorio, '*.dcm'))
 
             if not directorio.exists():
                 raise print("funca pochillon no existe directorio")
             elif not tiff_files:
-                raise print("Funca pocho no hay tiff")
+                raise print("Funca pocho no hay dcm")
 
             # self.print_directory()
             plots = []
@@ -337,7 +354,7 @@ class Vista(Gtk.Window):
                 self.cargar_image_multiple_lista(f)
 
             self.posicion_lista = len(self.lista_imagenes) - 1
-            self.load_image_conobjeto(self.lista_imagenes[self.posicion_lista])
+            self.load_image_vista_data(self.lista_imagenes[self.posicion_lista])
 
             self.button3.show()
             self.button4.show()
@@ -402,18 +419,18 @@ class Vista(Gtk.Window):
         # Cargar la imagen original
 
         # Escalar la imagen según el factor de zoom
-        scaled_width = int(self.original_pixbuf.get_width() * self.zoom_factor)
-        scaled_height = int(self.original_pixbuf.get_height() * self.zoom_factor)
-        displayed_pixbuf = self.original_pixbuf.scale_simple(scaled_width, scaled_height, GdkPixbuf.InterpType.BILINEAR)
+        scaled_width = int(self.original_pixbuf_8_bits.get_width() * self.zoom_factor)
+        scaled_height = int(self.original_pixbuf_8_bits.get_height() * self.zoom_factor)
+        displayed_pixbuf_8_bits = self.original_pixbuf_8_bits.scale_simple(scaled_width, scaled_height, GdkPixbuf.InterpType.BILINEAR)
 
         # Escalar la imagen según el factor de zoom
-        scaled_width = int(self.original_pixbuf.get_width() * self.zoom_factor)
-        scaled_height = int(self.original_pixbuf.get_height() * self.zoom_factor)
-        displayed_pixbuf2 = self.original_pixbuf.scale_simple(scaled_width, scaled_height, GdkPixbuf.InterpType.BILINEAR)
+        scaled_width = int(self.original_pixbuf_16_bits.get_width() * self.zoom_factor)
+        scaled_height = int(self.original_pixbuf_16_bits.get_height() * self.zoom_factor)
+        displayed_pixbuf_16_bits = self.original_pixbuf_16_bits.scale_simple(scaled_width, scaled_height, GdkPixbuf.InterpType.BILINEAR)
 
         # Mostrar la imagen actualizada
-        self.image.set_from_pixbuf(displayed_pixbuf)
-        self.image2.set_from_pixbuf(displayed_pixbuf2)
+        self.image_8_bits.set_from_pixbuf(displayed_pixbuf_8_bits)
+        self.image_16_bits.set_from_pixbuf(displayed_pixbuf_16_bits)
 
     def zoom_in(self):
         self.zoom_factor *= 1.1  # Factor de aumento del zoom
@@ -494,7 +511,7 @@ class Vista(Gtk.Window):
         # Activar el temporizador para aplicar el windowing después de un breve retraso
         self.timeout_id = GLib.timeout_add(200, self.apply_windowing_delayed)
 
-    def apply_windowing(self, image, window_center, window_width):
+    def apply_windowing_8_bits(self, image, window_center, window_width):
         # Calcular los límites del rango de píxeles
         min_value = window_center - (window_width / 2)
         max_value = window_center + (window_width / 2)
@@ -504,20 +521,33 @@ class Vista(Gtk.Window):
         windowed_image = np.clip((image - min_value) / window_width * 255, 0, 255).astype(np.uint8)
         return windowed_image
 
+    def apply_windowing_16_bits(self, image, window_center, window_width):
+        # Calcular los límites del rango de píxeles
+        min_value = window_center - (window_width / 2)
+        max_value = window_center + (window_width / 2)
+
+        print("movido")
+        # Aplicar windowing a la imagen
+        windowed_image = np.clip((image - min_value) / window_width * 65535, 0, 65535).astype(np.uint8)
+        return windowed_image
+
     def apply_windowing_delayed(self):
         # Obtener los valores de window_center y window_width de las barras de desplazamiento
         window_center = self.scale_center.get_value()
+        print(window_center)
         window_width = self.scale_width.get_value()
+        print(window_width)
 
         # Aplicar windowing a la imagen cargada
-        if hasattr(self, 'image'):
-            windowed_image = self.apply_windowing(self.image_numpy1, window_center, window_width)
-            windowed_image2 = self.apply_windowing(self.image_numpy2, window_center, window_width)
+        if hasattr(self, 'image_8_bits'):
+            print("entra")
+            windowed_image_8 = self.apply_windowing_8_bits(self.imagecv_8_bits, window_center, window_width)
+            windowed_image_16 = self.apply_windowing_8_bits(self.imagecv_16_bits, window_center, window_width)
 
-            self.displayed_pixbuf = self.show_image(windowed_image)
-            self.displayed_pixbuf2 = self.show_image(windowed_image2)
-            self.image.set_from_pixbuf(self.displayed_pixbuf)
-            self.image2.set_from_pixbuf(self.displayed_pixbuf2)
+            self.displayed_pixbuf_8_bits = self.show_image(windowed_image_8)
+            self.displayed_pixbuf_16_bits = self.show_image_16(windowed_image_16)
+            self.image_8_bits.set_from_pixbuf(self.displayed_pixbuf_8_bits)
+            self.image_16_bits.set_from_pixbuf(self.displayed_pixbuf_16_bits)
 
         # Reiniciar el ID del temporizador
         self.timeout_id = None
@@ -531,6 +561,15 @@ class Vista(Gtk.Window):
         height, width, channels = image.shape
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         pixbuf = GdkPixbuf.Pixbuf.new_from_data(rgb_image.flatten(), GdkPixbuf.Colorspace.RGB, False, 8, width, height, width * channels, None, None)
+
+        return pixbuf
+
+    def show_image_16(self, image):
+        # Convertir la imagen a formato Pixbuf para mostrarla en el área de dibujo
+        print("mvodio")
+        height, width, channels = image.shape
+        rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        pixbuf = GdkPixbuf.Pixbuf.new_from_data(rgb_image.flatten(), GdkPixbuf.Colorspace.RGB, False, 16, width, height, width * channels, None, None)
 
         return pixbuf
 
@@ -552,7 +591,7 @@ class Vista(Gtk.Window):
             self.viewport.remove(child)
             for child in self.viewport2.get_children():
                 self.viewport2.remove(child)
-        self.load_image_conobjeto(self.lista_imagenes[self.posicion_lista])
+        self.load_image_vista_data(self.lista_imagenes[self.posicion_lista])
 
     def on_button_siguiente_clicked(self, widget):
 
@@ -568,7 +607,7 @@ class Vista(Gtk.Window):
             self.viewport.remove(child)
         for child in self.viewport2.get_children():
             self.viewport2.remove(child)
-        self.load_image_conobjeto(self.lista_imagenes[self.posicion_lista])
+        self.load_image_vista_data(self.lista_imagenes[self.posicion_lista])
 
     def on_button_delete_foto_actual_clicked(self, widget):
         if len(self.lista_imagenes) == 0:
@@ -588,7 +627,7 @@ class Vista(Gtk.Window):
         else:
             if len(self.lista_imagenes) == 1:
                 self.posicion_lista = 0
-            self.load_image_conobjeto(self.lista_imagenes[self.posicion_lista])
+            self.load_image_vista_data(self.lista_imagenes[self.posicion_lista])
 
     #Hacer boton de borrar la lista y boton de borrar una foto
     def on_button_delete_lista_clicked(self, widget):

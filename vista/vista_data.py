@@ -6,24 +6,46 @@ from gi.repository import Gtk, GdkPixbuf, Gdk, GLib
 class ModeloVista:
 
     """Atributos de tipo de dato usado para guardar la info extraida del DICOM"""
-    original_pixbuf: GdkPixbuf.Pixbuf
-    displayed_pixbuf: GdkPixbuf.Pixbuf
-    image: Gtk.Image
+    original_pixbuf_8_bits: GdkPixbuf.Pixbuf
+    displayed_pixbuf_8_bits: GdkPixbuf.Pixbuf
+    image_8_bits: Gtk.Image
 
-    def __init__(self, file_path):
-        self.imagecv = cv2.imread(file_path)
-        self.original_pixbuf = GdkPixbuf.Pixbuf.new_from_file(file_path)
-        self.displayed_pixbuf = GdkPixbuf.Pixbuf.new_from_file(file_path)
-        self.image = Gtk.Image.new_from_pixbuf(self.displayed_pixbuf)
+    original_pixbuf_16_bits: GdkPixbuf.Pixbuf
+    displayed_pixbuf_16_bits: GdkPixbuf.Pixbuf
+    image_16_bits: Gtk.Image
 
-    def get_image_numpy(self):
-        return self.imagecv
+    def __init__(self, file_path_8_bits, file_path_16_bits):
+        self.imagecv_8_bits = cv2.imread(file_path_8_bits)
+        self.original_pixbuf_8_bits = GdkPixbuf.Pixbuf.new_from_file(file_path_8_bits)
+        self.displayed_pixbuf_8_bits = GdkPixbuf.Pixbuf.new_from_file(file_path_8_bits)
+        self.image_8_bits = Gtk.Image.new_from_pixbuf(self.displayed_pixbuf_8_bits)
 
-    def get_original_pixbuf(self):
-        return self.original_pixbuf
+        self.imagecv_16_bits = cv2.imread(file_path_16_bits)
+        self.original_pixbuf_16_bits = GdkPixbuf.Pixbuf.new_from_file(file_path_16_bits)
+        self.displayed_pixbuf_16_bits = GdkPixbuf.Pixbuf.new_from_file(file_path_16_bits)
+        self.image_16_bits = Gtk.Image.new_from_pixbuf(self.displayed_pixbuf_16_bits)
 
-    def get_displayed_pixbuf(self):
-        return self.displayed_pixbuf
+    def get_image_numpy_8_bits(self):
+        return self.imagecv_8_bits
 
-    def get_image(self):
-        return self.image
+    def get_original_pixbuf_8_bits(self):
+        return self.original_pixbuf_8_bits
+
+    def get_displayed_pixbuf_8_bits(self):
+        return self.displayed_pixbuf_8_bits
+
+    def get_image_8_bits(self):
+        return self.image_8_bits
+
+
+    def get_image_numpy_16_bits(self):
+        return self.imagecv_16_bits
+
+    def get_original_pixbuf_16_bits(self):
+        return self.original_pixbuf_16_bits
+
+    def get_displayed_pixbuf_16_bits(self):
+        return self.displayed_pixbuf_16_bits
+
+    def get_image_16_bits(self):
+        return self.image_16_bits

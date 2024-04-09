@@ -13,8 +13,10 @@ def main():
 
     # Crear instancias de Modelo, Vista y Controlador
     modelo = Modelo()
-    vista = Vista()
-    controlador = Controlador(modelo, vista)
+
+    controlador = Controlador(modelo)
+
+    vista = Vista(controlador)
 
     # Inicializar la vista con los datos del modelo
     #controlador.actualizar_vista()
@@ -29,15 +31,19 @@ def main():
 
     #controlador.mostrar_ventana()
 
-    controlador.cargar_unico_dicom(ruta4)
+    #controlador.cargar_unico_dicom(ruta4)
     # Modificar los datos a través del controlador
-    controlador.transformar_ultimo_dicom()
+    #controlador.transformar_ultimo_dicom_tiff_16_bits()
+
+    #controlador.transformar_ultimo_dicom_tiff_8_bits()
     # Guardar los datos a traves del controlador
-    controlador.guardar_ultimo_dicom()
+    #controlador.guardar_ultimo_dicom_tiff_16_bits()
+
+    #controlador.guardar_ultimo_dicom_tiff_8_bits()
     # Verificar que la vista se actualice automáticamente
     #controlador.visualizar_ultimo_dicom()
     #vista.show_all()
-    vista = Vista()
+    #vista = Vista()
     vista.connect("destroy", Gtk.main_quit)
     Gtk.main()
 

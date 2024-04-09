@@ -20,7 +20,8 @@ class DicomData:
     def __init__(self, dicom: pydicom.dataset.FileDataset):
         self.ds = dicom
         self.pixel_data_original = dicom.pixel_array
-        self.pixel_data_modified = np.zeros(dicom.pixel_array.shape)
+        self.pixel_data_modified_16_bits = np.zeros(dicom.pixel_array.shape)
+        self.pixel_data_modified_8_bits = np.zeros(dicom.pixel_array.shape)
         self.min_pixel_value = dicom.pixel_array.min()
         self.max_pixel_value = dicom.pixel_array.max()
         self.window_center = dicom.WindowCenter
@@ -36,11 +37,17 @@ class DicomData:
     def get_pixel_data_original(self):
         return self.pixel_data_original
 
-    def get_pixel_data_modified(self):
-        return self.pixel_data_modified
+    def get_pixel_data_modified_16_bits(self):
+        return self.pixel_data_modified_16_bits
 
-    def set_pixel_data_modified(self, pixel_data_modified):
-        self.pixel_data_modified = pixel_data_modified
+    def set_pixel_data_modified_16_bits(self, pixel_data_modified_16_bits):
+        self.pixel_data_modified_16_bits = pixel_data_modified_16_bits
+
+    def get_pixel_data_modified_8_bits(self):
+        return self.pixel_data_modified_8_bits
+
+    def set_pixel_data_modified_8_bits(self, pixel_data_modified_8_bits):
+        self.pixel_data_modified_8_bits = pixel_data_modified_8_bits
 
     def get_min_pixel_value(self):
         return self.min_pixel_value
