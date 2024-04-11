@@ -121,7 +121,9 @@ class Vistaesperimento(Gtk.Window):
         #self.fig8 = plt.figure()
         self.fig8, axs = plt.subplots(nrows=1, ncols=2, figsize=(12, 4), sharex=True, sharey=True)
         self.ax8 = axs[0]
+        self.ax8.axis('off')
         self.ax16 = axs[1]
+        self.ax16.axis('off')
 
         self.canvas8 = FigureCanvas(self.fig8)
 

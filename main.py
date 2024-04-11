@@ -17,9 +17,9 @@ def main():
 
     controlador = Controlador(modelo)
 
-    vista = Vista(controlador)
+    #vista = Vista(controlador)
 
-    #vista = Vistaesperimento(controlador)
+    vista = Vistaesperimento(controlador)
 
     # Inicializar la vista con los datos del modelo
     #controlador.actualizar_vista()
