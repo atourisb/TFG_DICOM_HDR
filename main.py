@@ -1,4 +1,5 @@
 from vista.vista import Vista
+from vista_alternativa import Vistaesperimento
 from modelo.modelo import Modelo
 from controlador.controlador import Controlador
 import gi
@@ -17,6 +18,8 @@ def main():
     controlador = Controlador(modelo)
 
     vista = Vista(controlador)
+
+    #vista = Vistaesperimento(controlador)
 
     # Inicializar la vista con los datos del modelo
     #controlador.actualizar_vista()

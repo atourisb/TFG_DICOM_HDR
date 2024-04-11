@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_gtk3agg import FigureCanvasGTK3Agg as FigureCanvas
 #from modelo.dicom_data import DicomData
 from vista.vista_data import ModeloVista
 import gi
@@ -10,10 +11,13 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 from pathlib import Path
+from matplotlib.backends.backend_gtk3 import (
+    NavigationToolbar2GTK3 as NavigationToolbar)
+
 
 # Vista
 
-class Vista(Gtk.Window):
+class Vistaesperimento(Gtk.Window):
 
     def __init__(self, controlador):
 
@@ -40,6 +44,25 @@ class Vista(Gtk.Window):
         self.box_botones.set_spacing(0)
 
         #------------------------------------- Anhadimos los diferentes botones ---------------------------------------#
+
+        # Crear una barra de desplazamiento para window_center
+        self.scale_center = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL)
+        self.scale_center.set_range(0, 255)
+        self.scale_center.set_value(127)  # Valor inicial
+        self.scale_center.set_draw_value(False)
+        self.scale_center.connect("value-changed", self.on_scale_changed_8_bits)
+        self.box_botones.pack_start(self.scale_center, True, True, 0)
+
+        # Crear una barra de desplazamiento para window_width
+        self.scale_width = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL)
+        self.scale_width.set_range(0, 255)
+        self.scale_width.set_value(255)  # Valor inicial
+        self.scale_width.set_draw_value(False)
+        self.scale_width.connect("value-changed", self.on_scale_changed_8_bits)
+        self.box_botones.pack_start(self.scale_width, True, True, 0)
+
+        self.scale_center_16_bits = 32767
+        self.scale_width_16_bits = 65535
 
         # Boton para cargar una imagen
         self.button1 = Gtk.Button(label="Elegir Fichero")
@@ -75,22 +98,6 @@ class Vista(Gtk.Window):
         self.button_delete.set_image(Gtk.Image.new_from_icon_name("user-trash-symbolic", Gtk.IconSize.BUTTON))
         self.box_botones.pack_start(self.button_delete, False, False, 10)
 
-        # Crear una barra de desplazamiento para window_center
-        self.scale_center = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL)
-        self.scale_center.set_range(0, 255)
-        self.scale_center.set_value(127)  # Valor inicial
-        self.scale_center.set_draw_value(False)
-        self.scale_center.connect("value-changed", self.on_scale_changed)
-        self.box_botones.pack_start(self.scale_center, True, True, 0)
-
-        # Crear una barra de desplazamiento para window_width
-        self.scale_width = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL)
-        self.scale_width.set_range(0, 255)
-        self.scale_width.set_value(255)  # Valor inicial
-        self.scale_width.set_draw_value(False)
-        self.scale_width.connect("value-changed", self.on_scale_changed)
-        self.box_botones.pack_start(self.scale_width, True, True, 0)
-
         # ----------------------------------------- Anhadimos las imagenes --------------------------------------------#
 
         # Esta parte de la vista se agregaran los widgets necesarios para poder representar las imagenes
@@ -104,12 +111,31 @@ class Vista(Gtk.Window):
         # --------------------------------------------- Primera imagen ------------------------------------------------#
 
         self.imagecv_8_bits = None
-        self.original_pixbuf_8_bits = None
-        self.displayed_pixbuf_8_bits = None
+        self.imagecv_8_bits_dsplayed = None
 
         # Crear el widget para representar la imagen
         self.scrolledwindow = Gtk.ScrolledWindow()  # added
         self.viewport = Gtk.Viewport()  # added
+
+        # Agregacion para el canvas
+        #self.fig8 = plt.figure()
+        self.fig8, axs = plt.subplots(nrows=1, ncols=2, figsize=(12, 4), sharex=True, sharey=True)
+        self.ax8 = axs[0]
+        self.ax16 = axs[1]
+
+        self.canvas8 = FigureCanvas(self.fig8)
+
+        self.toolbar = NavigationToolbar(self.canvas8, self)
+        self.box_botones.pack_start(self.toolbar, False, False, 10)
+
+        # Agregar el lienzo al viewport
+        self.viewport.add(self.canvas8)
+
+        # Crear la barra de herramientas de navegación
+        #toolbar8 = NavigationToolbar(self.canvas8, self.fig8)
+        # Agregar la barra de herramientas a la interfaz gráfica
+        #self.fig8.addWidget(toolbar8)
+
         self.scrolledwindow.add(self.viewport)
         self.vadjustment1 = self.viewport.get_vadjustment()
         self.hadjustment1 = self.viewport.get_hadjustment()
@@ -117,40 +143,35 @@ class Vista(Gtk.Window):
 
         # --------------------------------------------- Segunda imagen ------------------------------------------------#
         self.imagecv_16_bits = None
-        self.original_pixbuf_16_bits = None
-        self.displayed_pixbuf_16_bits = None
+        self.imagecv_16_bits_dsplayed = None
 
         # Crear el widget para representar la imagen
         self.scrolledwindow2 = Gtk.ScrolledWindow()  # added
         self.viewport2 = Gtk.Viewport()  # added
+
+        #Agregacion para el canvas
+        self.fig16 = plt.figure()
+        self.canvas16 = FigureCanvas(self.fig16)
+
+        # Agregar el lienzo al viewport
+        self.viewport2.add(self.canvas16)
+
+        # Crear la barra de herramientas de navegación
+        #toolbar16 = NavigationToolbar(self.canvas16, self.fig16)
+        # Agregar la barra de herramientas a la interfaz gráfica
+        #self.fig16.addWidget(toolbar16)
+
         self.scrolledwindow2.add(self.viewport2)
         self.vadjustment2 = self.viewport2.get_vadjustment()
         self.hadjustment2 = self.viewport2.get_hadjustment()
-        self.box2.pack_start(self.scrolledwindow2, True, True, 0)
+        #self.box2.pack_start(self.scrolledwindow2, True, True, 0)
 
         #----- --------------------- Conexiones de los botones con las diferentes funciones ---------------------------#
         self.connect("destroy", Gtk.main_quit)
 
         # Conexiones para realizar el scroll el panning en la imagen y el zoom
         #Mirar cual es cual
-        self.viewport.connect("scroll-event", self.on_viewport_scroll_event)
-        self.viewport2.connect("scroll-event", self.on_viewport_scroll_event)
-        self.connect("scroll-event", self.on_scroll_event_zoom)
         self.add_events(Gdk.EventMask.SCROLL_MASK)
-        self.viewport.connect("button-press-event", self.on_viewport_button_press)
-        self.viewport.connect("motion-notify-event", self.on_viewport_motion_notify)
-        self.viewport2.connect("button-press-event", self.on_viewport_button_press)
-        self.viewport2.connect("motion-notify-event", self.on_viewport_motion_notify)
-
-        # Conectar el evento "value-changed" de la barra de desplazamiento del primer ScrolledWindow
-        self.vadjustment1.connect("value-changed", self.on_vadjustment1_changed, self.vadjustment2)
-        self.hadjustment1.connect("value-changed", self.on_hadjustment1_changed, self.hadjustment2)
-        # Conectar el evento "value-changed" de la barra de desplazamiento del segundo ScrolledWindow
-        self.vadjustment2.connect("value-changed", self.on_vadjustment1_changed, self.vadjustment1)
-        self.hadjustment2.connect("value-changed", self.on_hadjustment1_changed, self.hadjustment1)
-        # Esto es para intentar desactivar la sync de las barras anhadidas antes cuando hacemos panning
-        self.scrolledwindow.connect("button-press-event", self.on_button_press_event)
-        self.scrolledwindow.connect("button-release-event", self.on_button_release_event)
 
         # No se que es tengo que mirar
         self.viewport.set_events(Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.POINTER_MOTION_MASK)
@@ -177,12 +198,25 @@ class Vista(Gtk.Window):
         self.button5.hide()
         self.button_delete.hide()
 
-    # Mirar lo que hice mal de la imagen i la imagencv y checkear que este todo correcto
+        # Mirar lo que hice mal de la imagen i la imagencv y checkear que este todo correcto
 
 
 #-------------------------------------------- METODOS DE LA NUEVA VISTA -----------------------------------------------#
 
 #-------------------------------------------- METODOS DE CARGA DE IMAGENES --------------------------------------------#
+
+    def show_image_8_bits(self, image):
+        self.ax8.clear()
+        self.ax8.imshow(image, cmap='gray')
+        self.ax8.axis('off')
+        self.canvas8.draw()
+
+    def show_image_16_bits(self, image):
+        print(image)
+        self.ax16.clear()
+        self.ax16.imshow(image, cmap='gray')
+        self.ax16.axis('off')
+        self.canvas16.draw()
 
     #Creamos el objeto del modelo vist_data llamando a los metodos del controlador
     def crear_vista_data(self, path):
@@ -202,84 +236,76 @@ class Vista(Gtk.Window):
 
     # Metodos para cargar imagenes y carpetas que contengan imagenes
 
-    # Metodo para cargar una imagen
-    def load_image(self, file_path):
-        try:
-            self.imagecv_8_bits = cv2.imread(file_path)
-            self.original_pixbuf_8_bits = GdkPixbuf.Pixbuf.new_from_file(file_path)
-            self.displayed_pixbuf_8_bits = GdkPixbuf.Pixbuf.new_from_file(file_path)
-            self.image_8_bits = Gtk.Image.new_from_pixbuf(self.displayed_pixbuf_8_bits)  # added
-
-            self.imagecv_16_bits = cv2.imread(file_path)
-            self.original_pixbuf_16_bits = GdkPixbuf.Pixbuf.new_from_file(file_path)
-            self.displayed_pixbuf_16_bits = GdkPixbuf.Pixbuf.new_from_file(file_path)
-            self.image_16_bits = Gtk.Image.new_from_pixbuf(self.displayed_pixbuf_16_bits)  # added
-            # scaled_pixbuf = pixbufdelaimagen.scale_simple(600, 400, GdkPixbuf.InterpType.BILINEAR)
-            # image.set_from_pixbuf(scaled_pixbuf)
-        except Exception as e:
-            print("Error al cargar la imagen:", e)
-
-
     # Metodo que nos permite cargar una carpeta y todas las imagenes a la vez que contenga
     def load_image_vista_data(self, vista_data):
         try:
             self.imagecv_8_bits = vista_data.get_image_numpy_8_bits()
-            self.original_pixbuf_8_bits = vista_data.get_original_pixbuf_8_bits()
-            self.displayed_pixbuf_8_bits = vista_data.get_displayed_pixbuf_8_bits()
+            self.imagecv_8_bits_dsplayed = vista_data.get_image_numpy_8_bits()
             self.image_8_bits = vista_data.get_image_8_bits()
 
-            print(type(self.imagecv_8_bits))
-            print(self.imagecv_8_bits)
-
-            print("SeparacionNNNNNNNNNNNNNNNNN")
-
             self.imagecv_16_bits = vista_data.get_image_numpy_16_bits()
-            self.original_pixbuf_16_bits = vista_data.get_original_pixbuf_16_bits()
-            self.displayed_pixbuf_16_bits = vista_data.get_displayed_pixbuf_16_bits()
+            self.imagecv_16_bits_dsplayed = vista_data.get_image_numpy_16_bits()
             self.image_16_bits = vista_data.get_image_16_bits()
-
-            print(type(self.imagecv_16_bits))
-            print(self.imagecv_16_bits)
 
             print("Numero elementos de la lista: ", len(self.lista_imagenes))
             print("Posicion de la Lista: ", self.posicion_lista)
 
             #Lo aplica en ambas imagenes
-            self.scale_image()
+            #self.scale_image()
 
-            # image_cv = self.imagecv_16_bits
-            #
-            # # Verificar si la imagen se cargó correctamente
-            # if image_cv is not None:
-            #     # Obtener las dimensiones de la imagen
-            #     height, width, channels = image_cv.shape
-            #
-            #     # Iterar sobre los píxeles y mostrar sus valores
-            #     for y in range(height):
-            #         for x in range(width):
-            #             pixel_value = tuple(image_cv[y, x])
-            #             print(f"Pixel en ({x}, {y}): {pixel_value}")
-            # else:
-            #     print("Error: No se pudo cargar la imagen con cv2.")
+            #self.viewport.set_size_request(self.displayed_pixbuf_8_bits.get_width(), self.displayed_pixbuf_8_bits.get_height())
+            # plt.imshow(self.image_8_bits, cmap='gray')  # Mostrar la imagen en el lienzo
+            # Actualizar la visualización
+            # self.canvas8.draw()
 
-            self.viewport.set_size_request(self.displayed_pixbuf_8_bits.get_width(), self.displayed_pixbuf_8_bits.get_height())
-            self.viewport.add(self.image_8_bits)
-            self.viewport.show_all()
+            #self.ax8 = self.fig8.add_subplot(211)
+            self.show_image_8_bits(self.imagecv_8_bits_dsplayed)
 
-            self.viewport2.set_size_request(self.displayed_pixbuf_16_bits.get_width(), self.displayed_pixbuf_16_bits.get_height())
-            self.viewport2.add(self.image_16_bits)
-            self.viewport2.show_all()
+
+            #self.viewport.add(self.image_8_bits)
+            #self.viewport.show_all()
+
+            #self.viewport2.set_size_request(self.displayed_pixbuf_16_bits.get_width(), self.displayed_pixbuf_16_bits.get_height())
+            # plt.imshow(self.image_16_bits, cmap='gray')  # Mostrar la imagen en el lienzo
+            # Actualizar la visualización
+            # self.canvas16.draw()
+            #self.ax16 = self.fig8.add_subplot(212)
+            self.show_image_16_bits(self.imagecv_16_bits_dsplayed)
+
+            print(self.imagecv_16_bits_dsplayed)
+
+            #self.viewport2.add(self.image_16_bits)
+            #self.viewport2.show_all()
 
         except Exception as e:
             print("Error al cargar la imagen:", e)
 
     # Funcion usada
     def scale_image(self):
-        self.displayed_pixbuf_8_bits = self.original_pixbuf_8_bits.scale_simple(self.original_pixbuf_8_bits.get_width() * self.ratio,
-                                                                  self.original_pixbuf_8_bits.get_height() * self.ratio, 2)
+        # Obtener las dimensiones de las imágenes originales
+        height_8, width_8 = self.imagecv_8_bits.shape[:2]
+        height_16, width_16 = self.imagecv_16_bits.shape[:2]
 
-        self.displayed_pixbuf_16_bits = self.original_pixbuf_16_bits.scale_simple(self.original_pixbuf_16_bits.get_width() * self.ratio,
-                                                                  self.original_pixbuf_16_bits.get_height() * self.ratio, 2)
+        # Escalar las imágenes utilizando Matplotlib
+        scaled_image_8 = cv2.resize(self.imagecv_8_bits, (int(width_8 * self.ratio), int(height_8 * self.ratio)))
+        scaled_image_16 = cv2.resize(self.imagecv_16_bits, (int(width_16 * self.ratio), int(height_16 * self.ratio)))
+
+        # Limpiar las figuras existentes
+        self.fig8.clear()
+        self.fig16.clear()
+
+        # Mostrar las imágenes escaladas en las figuras utilizando Matplotlib
+        self.ax8 = self.fig8.add_subplot(111)
+        self.ax8.imshow(scaled_image_8, cmap='gray', extent=[0, width_8, 0, height_8])
+        self.ax8.axis('off')
+
+        self.ax16 = self.fig16.add_subplot(111)
+        self.ax16.imshow(scaled_image_16, cmap='gray', extent=[0, width_16, 0, height_16])
+        self.ax16.axis('off')
+
+        # Actualizar las visualizaciones de las figuras
+        self.canvas8.draw()
+        self.canvas16.draw()
 
 #----------------------------------------------------------------------------------------------------------------------#
 
@@ -330,10 +356,10 @@ class Vista(Gtk.Window):
         dialog.destroy()
 
     # AUXILIAR CARGA MULTIPLE IMAGENES
-    def cargar_image_multiple_lista(self, vista_data):
+    def cargar_image_multiple_lista(self, file_path):
         try:
-            #objetoFoto = ModeloVista(file_path)
-            self.lista_imagenes.append(vista_data)
+            objetoFoto = ModeloVista(file_path)
+            self.lista_imagenes.append(objetoFoto)
 
         except Exception as e:
             print("Error al cargar la imagen:", e)
@@ -374,8 +400,7 @@ class Vista(Gtk.Window):
                 print(f)
                 print(f.split("/")[-1])
                 filename = f.split("/")[-1]
-                vista_data = self.crear_vista_data(f)
-                self.cargar_image_multiple_lista(vista_data)
+                self.cargar_image_multiple_lista(f)
 
             self.posicion_lista = len(self.lista_imagenes) - 1
             self.load_image_vista_data(self.lista_imagenes[self.posicion_lista])
@@ -397,144 +422,18 @@ class Vista(Gtk.Window):
 
 #----------------------------------------------------------------------------------------------------------------------#
 
-#----------------------------------------------- METODOS PARA EL SCROLL -----------------------------------------------#
-
-    #Funciones para sincronizar las barras de scroll cuando se haga algun cambio entre ellas
-
-    # Función de callback para el evento "value-changed" de la barra de desplazamiento del primer ScrolledWindow
-    def on_vadjustment1_changed(self, adjustment1, adjustment2):
-        if self.panning == False:
-            # Obtener el valor de la barra de desplazamiento del primer ScrolledWindow
-            value = adjustment1.get_value()
-
-            # Establecer el mismo valor en la barra de desplazamiento del segundo ScrolledWindow
-            adjustment2.set_value(value)
-
-    def on_hadjustment1_changed(self, adjustment1, adjustment2):
-        if self.panning == False:
-            # Obtener el valor de la barra de desplazamiento del primer ScrolledWindow
-            value = adjustment1.get_value()
-
-            # Establecer el mismo valor en la barra de desplazamiento del segundo ScrolledWindow
-            adjustment2.set_value(value)
-
-    def on_viewport_scroll_event(self, viewport, event):
-        # Calcular el desplazamiento relativo
-        delta = event.get_scroll_deltas()[2]
-
-        scroll_scale_factor = 10
-
-        # Obtener el ajuste de desplazamiento de ambos viewports
-        adjustment1 = self.viewport.get_vadjustment()
-        adjustment2 = self.viewport2.get_vadjustment()
-
-        # Aplicar el desplazamiento relativo a ambos ajustes de desplazamiento
-        adjustment1.set_value(adjustment1.get_value() + delta * scroll_scale_factor)
-        adjustment2.set_value(adjustment2.get_value() + delta * scroll_scale_factor)
-
-        return True
-
-#----------------------------------------------------------------------------------------------------------------------#
-
-#---------------------------------------------- METODOS DE PARA EL ZOOM -----------------------------------------------#
-
-    # Funcion para actualizar la imagen en el viewport despues de modificar el zoom de la imagen
-    def update_image(self):
-        # Cargar la imagen original
-
-        # Escalar la imagen según el factor de zoom
-        scaled_width = int(self.displayed_pixbuf_8_bits.get_width() * self.zoom_factor)
-        scaled_height = int(self.displayed_pixbuf_8_bits.get_height() * self.zoom_factor)
-        displayed_pixbuf_8_bits = self.displayed_pixbuf_8_bits.scale_simple(scaled_width, scaled_height, GdkPixbuf.InterpType.BILINEAR)
-
-        # Escalar la imagen según el factor de zoom
-        scaled_width = int(self.displayed_pixbuf_16_bits.get_width() * self.zoom_factor)
-        scaled_height = int(self.displayed_pixbuf_16_bits.get_height() * self.zoom_factor)
-        displayed_pixbuf_16_bits = self.displayed_pixbuf_16_bits.scale_simple(scaled_width, scaled_height, GdkPixbuf.InterpType.BILINEAR)
-
-        # Mostrar la imagen actualizada
-        self.image_8_bits.set_from_pixbuf(displayed_pixbuf_8_bits)
-        self.image_16_bits.set_from_pixbuf(displayed_pixbuf_16_bits)
-
-    def zoom_in(self):
-        self.zoom_factor *= 1.1  # Factor de aumento del zoom
-        self.update_image()
-
-    def zoom_out(self):
-        self.zoom_factor /= 1.1  # Factor de reducción del zoom
-        self.update_image()
-
-    def on_scroll_event_zoom(self, widget, event):
-        # Verificar si se ha movido la rueda del ratón y si la tecla Ctrl está presionada
-        if event.state & Gdk.ModifierType.CONTROL_MASK and event.direction in [Gdk.ScrollDirection.UP,
-                                                                               Gdk.ScrollDirection.DOWN]:
-            #self.viewport.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER)
-            if event.direction == Gdk.ScrollDirection.UP:
-                self.zoom_in()
-            elif event.direction == Gdk.ScrollDirection.DOWN:
-                self.zoom_out()
-
-    #Este no se usa
-    def on_scroll_eventctrl(self, widget, event):
-        # Handles zoom in / zoom out on Ctrl+mouse wheel
-        accel_mask = Gtk.accelerator_get_default_mod_mask()
-        if event.state & accel_mask == Gdk.ModifierType.CONTROL_MASK:
-            direction = event.get_scroll_deltas()[2]
-            if direction > 0:  # scrolling down -> zoom out
-                self.zoom_out()
-            else:
-                self.zoom_in()
-
-#----------------------------------------------------------------------------------------------------------------------#
-
-#----------------------------------------------- METODOS PARA EL PANNING ----------------------------------------------#
-
-    #movida para probar a ver si se puede desactivar temporalmente la sync de barras cuando hacemos paning
-    def on_button_press_event(self, widget, event):
-        if event.button == Gdk.BUTTON_PRIMARY:
-            self.panning = True
-
-    def on_button_release_event(self, widget, event):
-        if event.button == Gdk.BUTTON_PRIMARY:
-            self.panning = False
-
-    def on_viewport_button_press(self, widget, event):
-        if event.type == Gdk.EventType.BUTTON_PRESS and event.button == 1:
-            self.prev_x = event.x
-            self.prev_y = event.y
-
-    def on_viewport_motion_notify(self, widget, event):
-        if self.panning:
-            if hasattr(self, 'prev_x') and hasattr(self, 'prev_y'):
-                if event.is_hint:
-                    x, y, state = event.window.get_device_position(event.device)
-                else:
-                    x = event.x
-                    y = event.y
-                    state = event.state
-                if state & Gdk.ModifierType.BUTTON1_MASK:
-                    h_adjustment = self.viewport.get_hadjustment()
-                    v_adjustment = self.viewport.get_vadjustment()
-                    h_adjustment2 = self.viewport2.get_hadjustment()
-                    v_adjustment2 = self.viewport2.get_vadjustment()
-                    h_adjustment.set_value(h_adjustment.get_value() + (self.prev_x - x))
-                    v_adjustment.set_value(v_adjustment.get_value() + (self.prev_y - y))
-                    h_adjustment2.set_value(h_adjustment2.get_value() + (self.prev_x - x))
-                    v_adjustment2.set_value(v_adjustment2.get_value() + (self.prev_y - y))
-                    self.prev_x = x
-                    self.prev_y = y
-
 #----------------------------------------------------------------------------------------------------------------------#
 
 #-------------------------------------- METODOS PARA LAS SCROLL BARS WINDOWING ----------------------------------------#
 
-    def on_scale_changed(self, scale):
+    def on_scale_changed_8_bits(self, scale):
+
         # Reiniciar el temporizador si ya estaba activo
         if self.timeout_id:
             GLib.source_remove(self.timeout_id)
 
         # Activar el temporizador para aplicar el windowing después de un breve retraso
-        self.timeout_id = GLib.timeout_add(200, self.apply_windowing_delayed)
+        self.timeout_id = GLib.timeout_add(200, self.apply_windowing_delayed_8_bits(scale))
 
     def apply_windowing_8_bits(self, image, window_center, window_width):
         # Calcular los límites del rango de píxeles
@@ -546,18 +445,21 @@ class Vista(Gtk.Window):
         windowed_image = np.clip((image - min_value) / window_width * 255, 0, 255).astype(np.uint8)
         return windowed_image
 
-    def apply_windowing_16_bits(self, image, window_center, window_width):
-        # Calcular los límites del rango de píxeles
-        min_value = window_center - (window_width / 2)
-        max_value = window_center + (window_width / 2)
+    def sincronizar_barras_16_bits(self, scale):
+        value = scale.get_value()
+        if scale == self.scale_center:
+            percentage = value / 255 * 100
+            print("Porcentaje de la barra 1:", percentage)
+            self.scale_center_16_bits = percentage * 65535 / 100
+            self.apply_windowing_delayed_16_bits(round(self.scale_center_16_bits))
 
-        print("movido16")
-        # Aplicar windowing a la imagen
-        #cambiar esto tambien tienes que poner el 65535 para que falle y calcule un rango fuera de 255
-        windowed_image = np.clip((image - min_value) / window_width * 255, 0, 255).astype(np.uint8)
-        return windowed_image
+        if scale == self.scale_width:
+            percentage = value / 255 * 100
+            print("Porcentaje de la barra 2:", percentage)
+            self.scale_width_16_bits = percentage * 65535 / 100
+            self.apply_windowing_delayed_16_bits(round(self.scale_width_16_bits))
 
-    def apply_windowing_delayed(self):
+    def apply_windowing_delayed_8_bits(self, scale):
         # Obtener los valores de window_center y window_width de las barras de desplazamiento
         window_center = self.scale_center.get_value()
         print(window_center)
@@ -567,40 +469,53 @@ class Vista(Gtk.Window):
         # Aplicar windowing a la imagen cargada
         if hasattr(self, 'image_8_bits'):
             print("entra")
-            windowed_image_8 = self.apply_windowing_8_bits(self.imagecv_8_bits, window_center, window_width)
-            windowed_image_16 = self.apply_windowing_16_bits(self.imagecv_16_bits, window_center, window_width)
+            self.imagecv_8_bits_dsplayed = self.apply_windowing_8_bits(self.imagecv_8_bits, window_center, window_width)
 
-            self.displayed_pixbuf_8_bits = self.show_image(windowed_image_8)
-            self.displayed_pixbuf_16_bits = self.show_image_16(windowed_image_16)
-            self.image_8_bits.set_from_pixbuf(self.displayed_pixbuf_8_bits)
-            self.image_16_bits.set_from_pixbuf(self.displayed_pixbuf_16_bits)
+            #windowed_image_8
 
-        # Reiniciar el ID del temporizador
+            #self.ax8 = self.fig8.add_subplot(111)
+            self.show_image_8_bits(self.imagecv_8_bits_dsplayed)
+
+
+        self.sincronizar_barras_16_bits(scale)
+
+            # Reiniciar el ID del temporizador
         self.timeout_id = None
 
         # Detener la propagación del evento
         return False
 
-    def show_image(self, image):
-        # Convertir la imagen a formato Pixbuf para mostrarla en el área de dibujo
-        height, width, channels = image.shape
-        rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        print("show 8 mvodio")
-        pixbuf = GdkPixbuf.Pixbuf.new_from_data(rgb_image.flatten(), GdkPixbuf.Colorspace.RGB, False, 8, width, height, width * channels, None, None)
+    def apply_windowing_16_bits(self, image, window_center, window_width):
+        # Calcular los límites del rango de píxeles
+        min_value = window_center - (window_width / 2)
+        max_value = window_center + (window_width / 2)
 
-        return pixbuf
+        print("movido16")
+        # Aplicar windowing a la imagen
+        windowed_image = np.clip((image - min_value) / window_width * 65535, 0, 65535).astype(np.uint16)
+        return windowed_image
 
-    def show_image_16(self, image):
-        # Convertir la imagen a formato Pixbuf para mostrarla en el área de dibujo
-        #Poner el quitar el channel si pruebo a convertir la de 16 a 8 cargandola mal para ensenharle lo que hice
+    def apply_windowing_delayed_16_bits(self, value):
+        # Obtener los valores de window_center y window_width de las barras de desplazamiento
+        #self.window_center_16_bits
+        print(self.scale_center_16_bits)
+        #self.window_width16 = self.scale_width16.get_value()
+        print(self.scale_width_16_bits)
 
-        height, width, channels = image.shape
+        # Aplicar windowing a la imagen cargada
+        if hasattr(self, 'image_16_bits'):
+            print("entra")
+            self.imagecv_16_bits_dsplayed = self.apply_windowing_16_bits(self.imagecv_16_bits, self.scale_center_16_bits, self.scale_width_16_bits)
+            #windowed_image_16
 
-        rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        print("show 16 mvodio")
-        pixbuf = GdkPixbuf.Pixbuf.new_from_data(rgb_image.flatten(), GdkPixbuf.Colorspace.RGB, False, 8, width, height, width * channels, None, None)
+            #self.ax16 = self.fig16.add_subplot(222)
+            self.show_image_16_bits(self.imagecv_16_bits_dsplayed)
 
-        return pixbuf
+        print("LLEGA AQUI ESPROPIESE")
+
+        # Detener la propagación del evento
+        return False
+
 
 #----------------------------------------------------------------------------------------------------------------------#
 
@@ -698,7 +613,7 @@ class Vista(Gtk.Window):
     def on_button_clicked(self, widget):
         self.mostrar_dicom_original_y_dicom_transformado()
 
-    # -----------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------
 
     # def mostrar_ejemplo(self):
     #     win = Gtk.Window()
