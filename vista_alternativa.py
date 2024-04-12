@@ -64,6 +64,11 @@ class Vistaesperimento(Gtk.Window):
         self.scale_center_16_bits = 32767
         self.scale_width_16_bits = 65535
 
+        self.windowing_center_8_bits = 127
+        self.windowinge_width_8_bits = 255
+        self.windowing_center_16_bits = 32767
+        self.windowing_width_16_bits = 65535
+
         # Boton para cargar una imagen
         self.button1 = Gtk.Button(label="Elegir Fichero")
         self.button1.connect("clicked", self.on_file_clicked)
@@ -119,7 +124,7 @@ class Vistaesperimento(Gtk.Window):
 
         # Agregacion para el canvas
         #self.fig8 = plt.figure()
-        self.fig8, axs = plt.subplots(nrows=1, ncols=2, figsize=(12, 4), sharex=True, sharey=True)
+        self.fig8, axs = plt.subplots(nrows=1, ncols=2, figsize=(10, 6), sharex=True, sharey=True)
         self.ax8 = axs[0]
         self.ax8.axis('off')
         self.ax16 = axs[1]
@@ -179,6 +184,13 @@ class Vistaesperimento(Gtk.Window):
         self.viewport.set_events(Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.POINTER_MOTION_MASK)
         self.viewport2.set_events(Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.POINTER_MOTION_MASK)
 
+        # Variables para rastrear si el botón del ratón está presionado
+        self.mouse_pressed = False
+        #Para reconocer el movimiento en vertical y que funque el cambio de window center
+        self.viewport.connect("motion-notify-event", self.on_motion_notify)
+        self.viewport.connect("button-press-event", self.on_button_press)
+        self.viewport.connect("button-release-event", self.on_button_release)
+
         # Factor de zoom inicial
         self.zoom_factor = 1.0
         self.ratio = 3.
@@ -202,6 +214,9 @@ class Vistaesperimento(Gtk.Window):
 
         # Mirar lo que hice mal de la imagen i la imagencv y checkear que este todo correcto
 
+
+#utilizar el viewport y el codigo del panning para mover de alguna manera el windowing center y el width center vertical y el width en horizontal de esa manera
+# se podra llamar a la funcion que cambie la imagen
 
 #-------------------------------------------- METODOS DE LA NUEVA VISTA -----------------------------------------------#
 
@@ -591,6 +606,135 @@ class Vistaesperimento(Gtk.Window):
         self.button5.hide()
         self.button_delete.hide()
         return True
+
+    def apply_windowing_viewport_8_bits(self):
+        # Obtener los valores de window_center y window_width de las barras de desplazamiento
+        #self.window_center_16_bits
+        print(self.scale_center)
+        #self.window_width16 = self.scale_width16.get_value()
+        print(self.scale_width)
+
+        # Aplicar windowing a la imagen cargada
+        if hasattr(self, 'image_8_bits'):
+            print("entra")
+            self.imagecv_8_bits_dsplayed = self.apply_windowing_8_bits(self.imagecv_8_bits, self.scale_center, self.scale_width)
+            #windowed_image_16
+
+            #self.ax16 = self.fig16.add_subplot(222)
+            self.show_image_8_bits(self.imagecv_8_bits_dsplayed)
+
+        print("LLEGA AQUI ESPROPIESE")
+
+        # Detener la propagación del evento
+        return False
+
+    def sincronizar_valores_8_bits(self):
+        value_center_16_bits = self.scale_center_16_bits
+        value_width_16_bits = self.scale_width_16_bits
+
+        percentage = value_center_16_bits / 65535 * 100
+        print("Porcentaje de la barra 1:", percentage)
+        self.scale_center = round(percentage * 255 / 100)
+        self.apply_windowing_viewport_8_bits()
+
+        percentage = value_width_16_bits / 65535 * 100
+        print("Porcentaje de la barra 2:", percentage)
+        self.scale_width = round(percentage * 255 / 100)
+        self.apply_windowing_viewport_8_bits()
+
+    def apply_windowing_viewport_16(self):
+        # Obtener los valores de window_center y window_width de las barras de desplazamiento
+        window_center = self.scale_center_16_bits
+        print(window_center)
+        window_width = self.scale_width_16_bits
+        print(window_width)
+
+        # Aplicar windowing a la imagen cargada
+        if hasattr(self, 'image_16_bits'):
+            print("entra")
+            self.imagecv_16_bits_dsplayed = self.apply_windowing_16_bits(self.imagecv_16_bits, window_center, window_width)
+
+            #windowed_image_8
+
+            #self.ax8 = self.fig8.add_subplot(111)
+            self.show_image_16_bits(self.imagecv_16_bits_dsplayed)
+
+
+        self.sincronizar_valores_8_bits()
+
+            # Reiniciar el ID del temporizador
+        self.timeout_id = None
+
+        # Detener la propagación del evento
+        return False
+
+
+    def on_button_press(self, viewport, event):
+        if event.button == Gdk.BUTTON_PRIMARY:  # Botón izquierdo del ratón
+            self.start_y = event.y
+            self.start_window_center = self.windowing_center_16_bits
+            self.mouse_pressed = True
+
+    def on_button_release(self, viewport, event):
+        if event.button == Gdk.BUTTON_PRIMARY:  # Botón izquierdo del ratón
+            self.apply_windowing_viewport_16()
+            self.mouse_pressed = False
+
+    # def on_mouse_motion(self, viewport, event):
+    #     if self.mouse_pressed:
+    #         if event.is_hint:
+    #             _, x, y, _ = event.window.get_pointer()
+    #         else:
+    #             x = event.x
+    #             y = event.y
+    #
+    #         # Calcular el nuevo valor de window_center basado en la posición vertical del ratón
+    #         # Aquí puedes ajustar la lógica según tus necesidades
+    #         window_center = 32767 - (y - 150) * 100
+    #         print("Window Center:", window_center)
+    #
+    #         # Actualizar la imagen con el nuevo window_center
+    #         # Aquí llamarías a la función que actualiza la imagen con el nuevo window_center
+    #         # Por ahora, simplemente imprimimos el valor
+
+    def on_motion_notify(self, widget, event):
+        if self.mouse_pressed:
+            delta_y = self.start_y - event.y  # Calcula el cambio en la posición vertical del ratón
+
+            # Ajusta la velocidad del cambio en función de la distancia recorrida por el ratón
+            fraction = 2  # Fracción del movimiento del ratón que se aplicará al cambio en window_center
+            delta_window_center = int(delta_y * fraction)
+
+            # Calcula el nuevo valor de window_center basado en el cambio en el eje Y
+            self.scale_center_16_bits = self.start_window_center + delta_window_center
+
+            # Asegúrate de que el valor de window_center esté dentro del rango válido (0 a 65535)
+            self.scale_center_16_bits = max(0, min(65535, self.scale_center_16_bits))
+
+            print("New window_center:", self.scale_center_16_bits)
+
+    # def on_motion_notify(self, widget, event):
+    #     if self.mouse_pressed:
+    #         delta_y = self.start_y - event.y  # Calcula el cambio en la posición vertical del ratón
+    #
+    #         # Calcula el nuevo valor de window_center basado en el cambio en el eje Y
+    #         self.scale_center_16_bits = self.scale_center_16_bits + delta_y * 100
+    #
+    #         # Asegúrate de que el valor de window_center esté dentro del rango válido (0 a 65535)
+    #         #self.scale_center_16_bits = max(min(65535, self.scale_center_16_bits), 0)
+    #
+    #         #self.scale_center_16_bits = 0 if self.scale_center_16_bits < 0 else 65535 if self.scale_center_16_bits > 65535 else self.scale_center_16_bits
+    #
+    #         # if self.scale_center_16_bits < 0:
+    #         #     self.scale_center_16_bits = 0
+    #         #     print("POCHO:", self.scale_center_16_bits)
+    #         # elif self.scale_center_16_bits > 65535:
+    #         #     self.scale_center_16_bits = 65535
+    #         #else:
+    #             #return self.scale_center_16_bits
+    #
+    #
+    #         print("New window_center:", self.scale_center_16_bits)
 
 #-----------------------------------METODOS DEL MODELO ANTES DE IMPLEMENTAR LA VISTA BUENA-----------------------------#
 

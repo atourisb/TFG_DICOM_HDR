@@ -24,9 +24,9 @@ class ModeloVista:
 
         #path16 = "/home/rainor/PycharmProjects/tfg/salida/output_image_16_bits_1.tiff"
         #self.imagecv_16_bits = cv2.imread(path16)
-        self.imagecv_16_bits = cv2.imread(file_path_16_bits)
+        #self.imagecv_16_bits = cv2.imread(file_path_16_bits)
         #self.imagecv_16_bits = cv2.imread(file_path_16_bits, cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
-        #self.imagecv_16_bits = cv2.imread(file_path_16_bits, cv2.IMREAD_UNCHANGED)
+        self.imagecv_16_bits = cv2.imread(file_path_16_bits, cv2.IMREAD_UNCHANGED)
         self.original_pixbuf_16_bits = GdkPixbuf.Pixbuf.new_from_file(file_path_16_bits)
         self.displayed_pixbuf_16_bits = GdkPixbuf.Pixbuf.new_from_file(file_path_16_bits)
         self.image_16_bits = Gtk.Image.new_from_pixbuf(self.displayed_pixbuf_16_bits)
