@@ -96,6 +96,12 @@ class Vistaesperimento(Gtk.Window):
         self.button4.hide()
         self.box_botones.pack_start(self.button4, False, False, 10)
 
+        # CheckBox para activar y desactivar el windowing
+        self.check_button = Gtk.CheckButton(label="Activar Windowing")
+        self.check_button.connect("toggled", self.on_button_toggled)
+        self.box_botones.pack_start(self.check_button, False, False, 10)
+        self.value_windowing_active = False
+
         # Boton que elimina todas las imagenes que han sido cargadas
         self.button_delete = Gtk.Button()
         self.button_delete.connect("clicked", self.on_button_delete_lista_clicked)
@@ -124,10 +130,19 @@ class Vistaesperimento(Gtk.Window):
 
         # Agregacion para el canvas
         #self.fig8 = plt.figure()
-        self.fig8, axs = plt.subplots(nrows=1, ncols=2, figsize=(10, 6), sharex=True, sharey=True)
+        self.fig8, axs = plt.subplots(nrows=1, ncols=2, figsize=(10, 6), sharex=True, sharey=True, frameon=False)
+        self.fig8.tight_layout()
+        self.fig8.subplots_adjust(wspace=0, hspace=0, left=0, right=1, bottom=0, top=1)
+        # self.fig8.subplots_adjust(bottom=0)
+        # self.fig8.subplots_adjust(top=0.00001)  # This value should be very small so that marginal axes of subplot would not overlay on the main figure
+        # self.fig8.subplots_adjust(right=1)
+        # self.fig8.subplots_adjust(left=0)
+
         self.ax8 = axs[0]
+        #self.ax8.autoscale(enable=True)
         self.ax8.axis('off')
         self.ax16 = axs[1]
+        #self.ax16.autoscale(enable=True)
         self.ax16.axis('off')
 
         self.canvas8 = FigureCanvas(self.fig8)
@@ -226,14 +241,36 @@ class Vistaesperimento(Gtk.Window):
     def show_image_8_bits(self, image):
         self.ax8.clear()
         self.ax8.imshow(image, cmap='gray')
+        self.ax8.set_title("Version 8 Bits")
+        #self.ax8.savefig(image, bbox_inches='tight', transparent=True, pad_inches=0)
         self.ax8.axis('off')
+        self.canvas8.draw()
+
+    def show_image_8_bits_mantiene_zoom(self, image, xlim8, ylim8):
+        self.ax8.clear()
+        self.ax8.imshow(image, cmap='gray')
+        #self.ax8.savefig(image, bbox_inches='tight', transparent=True, pad_inches=0)
+        self.ax8.axis('off')
+        self.ax8.set_xlim(xlim8)
+        self.ax8.set_ylim(ylim8)
         self.canvas8.draw()
 
     def show_image_16_bits(self, image):
         print(image)
         self.ax16.clear()
         self.ax16.imshow(image, cmap='gray')
+        #self.ax16.savefig(image, bbox_inches='tight', transparent=True, pad_inches=0)
         self.ax16.axis('off')
+        self.canvas16.draw()
+
+    def show_image_16_bits_mantiene_zoom(self, image, xlim16, ylim16):
+        print(image)
+        self.ax16.clear()
+        self.ax16.imshow(image, cmap='gray')
+        #self.ax16.savefig(image, bbox_inches='tight', transparent=True, pad_inches=0)
+        self.ax16.axis('off')
+        self.ax16.set_xlim(xlim16)
+        self.ax16.set_ylim(ylim16)
         self.canvas16.draw()
 
     #Creamos el objeto del modelo vist_data llamando a los metodos del controlador
@@ -246,11 +283,14 @@ class Vistaesperimento(Gtk.Window):
         tuple = self.controlador.transformacion_y_guardado_vista(path)
 
         vista_data = ModeloVista(tuple[0], tuple[1])
+        self.lista_imagenes.append(vista_data)
 
         return vista_data
 
-
-
+    def queue_redraw(self):
+        # Queue a redraw of the window
+        Gtk.Window.queue_draw(self)
+        #return False  # Remove the callback after the first redraw
 
     # Metodos para cargar imagenes y carpetas que contengan imagenes
 
@@ -277,8 +317,9 @@ class Vistaesperimento(Gtk.Window):
             # self.canvas8.draw()
 
             #self.ax8 = self.fig8.add_subplot(211)
-            self.show_image_8_bits(self.imagecv_8_bits_dsplayed)
 
+            # COMENTARIO PARECE QUE SI NO HACEMOS AQUI EL SHOW FUNCIONA BIEN
+            self.show_image_8_bits(self.imagecv_8_bits_dsplayed)
 
             #self.viewport.add(self.image_8_bits)
             #self.viewport.show_all()
@@ -288,7 +329,24 @@ class Vistaesperimento(Gtk.Window):
             # Actualizar la visualización
             # self.canvas16.draw()
             #self.ax16 = self.fig8.add_subplot(212)
+
+            #COMENTARIO PARECE QUE SI NO HACEMOS AQUI EL SHOW FUNCIONA BIEN
             self.show_image_16_bits(self.imagecv_16_bits_dsplayed)
+
+            # while Gtk.events_pending():
+            #     Gtk.main_iteration_do()
+
+            #self.canvas8.queue_draw()
+
+            # self.fullscreen()
+            # self.unfullscreen()
+            # self.resize(1600, 1000)
+
+            #width, height = self.get_size()
+            #self.resize(width, height)
+
+            # Schedule the redraw callback using GLib.idle_add()
+            #GLib.idle_add(self.viewport.queue_draw(), Gtk.Window)
 
             print(self.imagecv_16_bits_dsplayed)
 
@@ -367,6 +425,10 @@ class Vistaesperimento(Gtk.Window):
             vista_data = self.crear_vista_data(dialog.get_filename())
 
             self.load_image_vista_data(vista_data)
+            self.show_image_8_bits(self.imagecv_8_bits_dsplayed)
+            self.show_image_16_bits(self.imagecv_16_bits_dsplayed)
+            #self.viewport.queue_draw()
+            self.viewport.draw()
 
         elif response == Gtk.ResponseType.CANCEL:
             print("Cancel clicked")
@@ -418,10 +480,14 @@ class Vistaesperimento(Gtk.Window):
                 print(f)
                 print(f.split("/")[-1])
                 filename = f.split("/")[-1]
-                self.cargar_image_multiple_lista(f)
+                #self.cargar_image_multiple_lista(f)
+                self.crear_vista_data(f)
 
             self.posicion_lista = len(self.lista_imagenes) - 1
             self.load_image_vista_data(self.lista_imagenes[self.posicion_lista])
+            self.show_image_8_bits(self.imagecv_8_bits_dsplayed)
+            self.show_image_16_bits(self.imagecv_16_bits_dsplayed)
+            #self.viewport.queue_draw()
 
             self.button3.show()
             self.button4.show()
@@ -541,6 +607,11 @@ class Vistaesperimento(Gtk.Window):
 
     def on_button_anterior_clicked(self, widget):
 
+        #Reiniciar el valore de windowing ambos cada vez que se cambia de foto o se elimina una foto
+        #Y arreglar el delete que funciona mal
+        #Por ultimo limpiar el codigo
+        #Quitar de la interfaz los elementos que se usen
+
         if len(self.lista_imagenes) == 0:
             raise Exception("La lista esta vacia")
 
@@ -549,11 +620,24 @@ class Vistaesperimento(Gtk.Window):
         else:
             self.posicion_lista -= 1
 
-        for child in self.viewport.get_children():
-            self.viewport.remove(child)
-            for child in self.viewport2.get_children():
-                self.viewport2.remove(child)
+        # for child in self.viewport.get_children():
+        #     self.viewport.remove(child)
+        #     for child in self.viewport2.get_children():
+        #         self.viewport2.remove(child)
+
         self.load_image_vista_data(self.lista_imagenes[self.posicion_lista])
+
+        #vista_objeto = self.lista_imagenes[self.posicion_lista]
+
+        self.show_image_8_bits(self.imagecv_8_bits_dsplayed)
+        self.show_image_16_bits(self.imagecv_16_bits_dsplayed)
+
+        # self.resize(1919, 1079)
+        # self.resize(1920, 1080)
+        #self.viewport.queue_draw()
+        #self.viewport.queue_draw()
+        #self.show_image_8_bits(self.imagecv_8_bits_dsplayed)
+        #self.show_image_16_bits(self.imagecv_16_bits_dsplayed)
 
     def on_button_siguiente_clicked(self, widget):
 
@@ -565,23 +649,38 @@ class Vistaesperimento(Gtk.Window):
         else:
             self.posicion_lista += 1
 
-        for child in self.viewport.get_children():
-            self.viewport.remove(child)
-        for child in self.viewport2.get_children():
-            self.viewport2.remove(child)
+        # for child in self.viewport.get_children():
+        #     self.viewport.remove(child)
+        # for child in self.viewport2.get_children():
+        #     self.viewport2.remove(child)
         self.load_image_vista_data(self.lista_imagenes[self.posicion_lista])
+        self.show_image_8_bits(self.imagecv_8_bits_dsplayed)
+        self.show_image_16_bits(self.imagecv_16_bits_dsplayed)
+
+        # self.resize(1919, 1079)
+        # self.resize(1920, 1080)
+        #self.viewport.queue_draw()
+        #self.viewport.queue_draw()
 
     def on_button_delete_foto_actual_clicked(self, widget):
         if len(self.lista_imagenes) == 0:
             raise Exception("La lista esta vacia")
 
         del self.lista_imagenes[self.posicion_lista]
-        for child in self.viewport.get_children():
-            self.viewport.remove(child)
-        for child in self.viewport2.get_children():
-            self.viewport2.remove(child)
+
+        if len(self.lista_imagenes)-1 ==  self.posicion_lista:
+            self.posicion_lista = self.posicion_lista - 1
+
+        #del self.lista_imagenes[self.posicion_lista]
+
+        # for child in self.viewport.get_children():
+        #     self.viewport.remove(child)
+        # for child in self.viewport2.get_children():
+        #     self.viewport2.remove(child)
 
         if len(self.lista_imagenes) == 0:
+            self.ax8.clear()
+            self.ax16.clear()
             self.button3.hide()
             self.button4.hide()
             self.button5.hide()
@@ -589,17 +688,21 @@ class Vistaesperimento(Gtk.Window):
         else:
             if len(self.lista_imagenes) == 1:
                 self.posicion_lista = 0
+
+            print(self.posicion_lista)
             self.load_image_vista_data(self.lista_imagenes[self.posicion_lista])
+            self.show_image_8_bits(self.imagecv_8_bits_dsplayed)
+            self.show_image_16_bits(self.imagecv_16_bits_dsplayed)
 
     #Hacer boton de borrar la lista y boton de borrar una foto
     def on_button_delete_lista_clicked(self, widget):
         if len(self.lista_imagenes) == 0:
             raise Exception("La lista esta vacia")
 
-        for child in self.viewport.get_children():
-            self.viewport.remove(child)
-        for child in self.viewport2.get_children():
-            self.viewport2.remove(child)
+        # for child in self.viewport.get_children():
+        #     self.viewport.remove(child)
+        # for child in self.viewport2.get_children():
+        #     self.viewport2.remove(child)
         self.lista_imagenes.clear()
 
         self.button3.hide()
@@ -607,6 +710,13 @@ class Vistaesperimento(Gtk.Window):
         self.button5.hide()
         self.button_delete.hide()
         return True
+
+    def on_button_toggled(self, button):
+        if button.get_active():
+            self.value_windowing_active = True
+        else:
+            self.value_windowing_active = False
+        print("CheckButton state is", self.value_windowing_active)
 
     def apply_windowing_viewport_8_bits(self):
         # Obtener los valores de window_center y window_width de las barras de desplazamiento
@@ -621,8 +731,10 @@ class Vistaesperimento(Gtk.Window):
             self.imagecv_8_bits_dsplayed = self.apply_windowing_8_bits(self.imagecv_8_bits, self.windowing_center_8_bits, self.windowing_width_8_bits)
             #windowed_image_16
 
+            self.xlim = self.ax8.get_xlim()
+            self.ylim = self.ax8.get_ylim()
             #self.ax16 = self.fig16.add_subplot(222)
-            self.show_image_8_bits(self.imagecv_8_bits_dsplayed)
+            self.show_image_8_bits_mantiene_zoom(self.imagecv_8_bits_dsplayed, self.xlim, self.ylim)
 
         print("LLEGA AQUI ESPROPIESE")
 
@@ -656,12 +768,22 @@ class Vistaesperimento(Gtk.Window):
             self.imagecv_16_bits_dsplayed = self.apply_windowing_16_bits(self.imagecv_16_bits, window_center, window_width)
 
             #windowed_image_8
+            self.xlim16 = self.ax16.get_xlim()
+            self.ylim16 = self.ax16.get_ylim()
 
             #self.ax8 = self.fig8.add_subplot(111)
-            self.show_image_16_bits(self.imagecv_16_bits_dsplayed)
-
+            self.show_image_16_bits_mantiene_zoom(self.imagecv_16_bits_dsplayed, self.xlim16, self.ylim16)
 
         self.sincronizar_valores_8_bits()
+
+        # self.xlim16 = self.ax16.get_xlim()
+        # self.ylim16 = self.ax16.get_ylim()
+        #
+        # self.ax16.set_xlim(self.xlim16)
+        # self.ax16.set_ylim(self.ylim16)
+        #
+        # self.ax8.set_xlim(self.xlim8)
+        # self.ax8.set_ylim(self.ylim8)
 
         # self.scale_center_16_bits = self.windowing_center_16_bits
         # self.scale_width_16_bits = self.windowing_width_16_bits
@@ -676,17 +798,19 @@ class Vistaesperimento(Gtk.Window):
 
 
     def on_button_press(self, viewport, event):
-        if event.button == Gdk.BUTTON_PRIMARY:  # Botón izquierdo del ratón
-            self.start_y = event.y
-            self.start_x = event.x
-            self.start_window_center = self.windowing_center_16_bits
-            self.start_window_width = self.windowing_width_16_bits
-            self.mouse_pressed = True
+        if self.value_windowing_active:
+            if event.button == Gdk.BUTTON_PRIMARY:  # Botón izquierdo del ratón
+                self.start_y = event.y
+                self.start_x = event.x
+                self.start_window_center = self.windowing_center_16_bits
+                self.start_window_width = self.windowing_width_16_bits
+                self.mouse_pressed = True
 
     def on_button_release(self, viewport, event):
-        if event.button == Gdk.BUTTON_PRIMARY:  # Botón izquierdo del ratón
-            self.apply_windowing_viewport_16()
-            self.mouse_pressed = False
+        if self.value_windowing_active:
+            if event.button == Gdk.BUTTON_PRIMARY:  # Botón izquierdo del ratón
+                self.apply_windowing_viewport_16()
+                self.mouse_pressed = False
 
     # def on_mouse_motion(self, viewport, event):
     #     if self.mouse_pressed:
@@ -706,36 +830,38 @@ class Vistaesperimento(Gtk.Window):
     #         # Por ahora, simplemente imprimimos el valor
 
     def on_motion_notify(self, widget, event):
-        if self.mouse_pressed:
-            delta_y = self.start_y - event.y  # Calcula el cambio en la posición vertical del ratón
+        if self.value_windowing_active:
+            if self.mouse_pressed:
+                delta_y = self.start_y - event.y  # Calcula el cambio en la posición vertical del ratón
 
-            # Ajusta la velocidad del cambio en función de la distancia recorrida por el ratón
-            fraction = 4  # Fracción del movimiento del ratón que se aplicará al cambio en window_center
-            delta_window_center = int(delta_y * fraction)
+                # Ajusta la velocidad del cambio en función de la distancia recorrida por el ratón
+                fraction = 4  # Fracción del movimiento del ratón que se aplicará al cambio en window_center
+                delta_window_center = int(delta_y * fraction)
 
-            # Calcula el nuevo valor de window_center basado en el cambio en el eje Y
-            self.windowing_center_16_bits = self.start_window_center + delta_window_center
+                # Calcula el nuevo valor de window_center basado en el cambio en el eje Y
+                self.windowing_center_16_bits = self.start_window_center + delta_window_center
 
-            # Asegúrate de que el valor de window_center esté dentro del rango válido (0 a 65535)
-            self.windowing_center_16_bits = max(0, min(65535, self.windowing_center_16_bits))
+                # Asegúrate de que el valor de window_center esté dentro del rango válido (0 a 65535)
+                self.windowing_center_16_bits = max(0, min(65535, self.windowing_center_16_bits))
 
-            print("New window_center:", self.windowing_center_16_bits)
+                print("New window_center:", self.windowing_center_16_bits)
 
     def on_motion_notify_width(self, widget, event):
-        if self.mouse_pressed:
-            delta_x = self.start_x - event.x  # Calcula el cambio en la posición vertical del ratón
+        if self.value_windowing_active:
+            if self.mouse_pressed:
+                delta_x = self.start_x - event.x  # Calcula el cambio en la posición vertical del ratón
 
-            # Ajusta la velocidad del cambio en función de la distancia recorrida por el ratón
-            fraction = 4  # Fracción del movimiento del ratón que se aplicará al cambio en window_center
-            delta_window_width = int(delta_x * fraction)
+                # Ajusta la velocidad del cambio en función de la distancia recorrida por el ratón
+                fraction = 4  # Fracción del movimiento del ratón que se aplicará al cambio en window_center
+                delta_window_width = int(delta_x * fraction)
 
-            # Calcula el nuevo valor de window_center basado en el cambio en el eje Y
-            self.windowing_width_16_bits = self.start_window_width - delta_window_width
+                # Calcula el nuevo valor de window_center basado en el cambio en el eje Y
+                self.windowing_width_16_bits = self.start_window_width - delta_window_width
 
-            # Asegúrate de que el valor de window_center esté dentro del rango válido (0 a 65535)
-            self.windowing_width_16_bits = max(0, min(65535, self.windowing_width_16_bits))
+                # Asegúrate de que el valor de window_center esté dentro del rango válido (0 a 65535)
+                self.windowing_width_16_bits = max(0, min(65535, self.windowing_width_16_bits))
 
-            print("New window_width:", self.windowing_width_16_bits)
+                print("New window_width:", self.windowing_width_16_bits)
 
     # def on_motion_notify(self, widget, event):
     #     if self.mouse_pressed:

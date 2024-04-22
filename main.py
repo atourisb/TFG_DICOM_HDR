@@ -1,5 +1,10 @@
 from vista.vista import Vista
 from vista_alternativa import Vistaesperimento
+from vista.vistaopengl import VistaOpenGl
+from vista.OTRAvistaopengl import OtraVIstaOpenGl
+from vista.vistaopenglexperimento import VistaOpenGl2
+from vista.vistaprueba import VistaOpenGl3
+from vista.vistawebcarlos import WebTutorial
 from modelo.modelo import Modelo
 from controlador.controlador import Controlador
 import gi
@@ -20,6 +25,17 @@ def main():
     #vista = Vista(controlador)
 
     vista = Vistaesperimento(controlador)
+    # Esto tiene que estar sin comentar para que funciona las vistas viejas
+    vista.connect("destroy", Gtk.main_quit)
+    Gtk.main()
+
+    #vista = VistaOpenGl(controlador)
+
+    #vista = VistaOpenGl2(controlador)
+    #Este es una pedazo de mierda #vista = VistaOpenGl3(controlador)
+    #vista = OtraVIstaOpenGl(controlador)
+
+    #vista = WebTutorial(controlador)
 
     # Inicializar la vista con los datos del modelo
     #controlador.actualizar_vista()
@@ -47,8 +63,10 @@ def main():
     #controlador.visualizar_ultimo_dicom()
     #vista.show_all()
     #vista = Vista()
-    vista.connect("destroy", Gtk.main_quit)
-    Gtk.main()
+
+    #Esto tiene que estar sin comentar para que funciona las vistas viejas
+    #vista.connect("destroy", Gtk.main_quit)
+    #Gtk.main()
 
 
     #---------------- PRUEBA DE GUARDO TODOS-----------------
