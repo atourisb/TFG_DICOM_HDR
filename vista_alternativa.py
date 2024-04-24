@@ -207,6 +207,31 @@ class Vistaesperimento(Gtk.Window):
         self.viewport.connect("button-press-event", self.on_button_press)
         self.viewport.connect("button-release-event", self.on_button_release)
 
+        # Configurar eventos de teclado
+        self.connect("key-press-event", self.on_key_press_z_zoom)
+        self.connect("key-press-event", self.on_key_press_x_paning)
+
+        # Evento zoom con el raton secundario
+        self.connect("button-press-event", self.on_button_press_zoom_mouse)
+        self.connect("button-release-event", self.on_button_release_zoom_mouse)
+        self.click_derecho_pulsado = False
+        # Evento para que se pulse el raton primario cuando pulse el secundario y fakear la funcion de zoom con el raton secundario
+        #self.connect("button_press_event", self.on_button_release_zoom_mouse)
+
+        # Evento panning con el raton secundario
+        self.connect("button-press-event", self.on_button_press_panning_mouse)
+        self.connect("button-release-event", self.on_button_release_panning_mouse)
+
+        # Evento windowing con el raton secundario
+        self.connect("button-press-event", self.on_button_press_windowing_mouse)
+        self.connect("button-release-event", self.on_button_release_windowing_mouse)
+
+
+
+        # Boton primario de raton para poder hacer zoom y asi
+        #self.scrolledwindow.connect("button-press-event", self.on_button_press_event)
+        self.add_events(Gdk.EventMask.SCROLL_MASK)
+
         # Factor de zoom inicial
         self.zoom_factor = 1.0
         self.ratio = 3.
@@ -249,6 +274,7 @@ class Vistaesperimento(Gtk.Window):
     def show_image_8_bits_mantiene_zoom(self, image, xlim8, ylim8):
         self.ax8.clear()
         self.ax8.imshow(image, cmap='gray')
+        self.ax8.set_title("Version 16 Bits")
         #self.ax8.savefig(image, bbox_inches='tight', transparent=True, pad_inches=0)
         self.ax8.axis('off')
         self.ax8.set_xlim(xlim8)
@@ -606,11 +632,18 @@ class Vistaesperimento(Gtk.Window):
 #-------------------------------------------- METODOS DE PARA LOS BOTONES ---------------------------------------------#
 
     def on_button_anterior_clicked(self, widget):
-
-        #Reiniciar el valore de windowing ambos cada vez que se cambia de foto o se elimina una foto
-        #Y arreglar el delete que funciona mal
+        self.ax8.clear()
+        self.ax16.clear()
+        self.ax8.axis('off')
+        self.ax16.axis('off')
+        self.canvas8.draw()
         #Por ultimo limpiar el codigo
         #Quitar de la interfaz los elementos que se usen
+
+        self.windowing_center_8_bits = 127
+        self.windowing_width_8_bits = 255
+        self.windowing_center_16_bits = 32767
+        self.windowing_width_16_bits = 65535
 
         if len(self.lista_imagenes) == 0:
             raise Exception("La lista esta vacia")
@@ -639,7 +672,112 @@ class Vistaesperimento(Gtk.Window):
         #self.show_image_8_bits(self.imagecv_8_bits_dsplayed)
         #self.show_image_16_bits(self.imagecv_16_bits_dsplayed)
 
+    def on_key_press_z_zoom(self, widget, event):
+        # Verificar si la tecla presionada es 'z' para activar el zoom
+        if event.keyval == Gdk.KEY_z:
+            print("ENTRAMOS EN EL ZOOM")
+            self.toolbar.zoom()
+
+    def on_key_press_x_paning(self, widget, event):
+        # Verificar si la tecla presionada es 'z' para activar el zoom
+        if event.keyval == Gdk.KEY_x:
+            print("ENTRAMOS EN EL PANNING")
+            self.toolbar.pan()
+
+    def on_button_press_windowing_mouse(self, widget, event):
+        if event.button == Gdk.BUTTON_SECONDARY:
+            print("ENTRAMOS EN EL WINDOWING")
+            self.value_windowing_active = True
+
+    def on_button_release_windowing_mouse(self, widget, event):
+        if event.button == Gdk.BUTTON_SECONDARY:
+            print("SALIMOS EN EL WINDOWING")
+            self.value_windowing_active = False
+
+    # --------------- ZOOM RATON EVENTOS RATON ---------------
+    #def evento_press(self):
+
+    # def simular_clic_primario(self, presionado):
+    #     if presionado and not self.click_derecho_pulsado:
+    #         print("Entra")
+    #         # self.click_derecho_pulsado = True
+    #         # evento_simulado = Gdk.Event.new(Gdk.EventType.BUTTON_PRESS)
+    #         # evento_simulado.button = Gdk.BUTTON_PRIMARY  # Botón izquierdo del ratón
+    #         # self.emit("button-press-event", evento_simulado)
+    #         display = Gdk.Display.get_default()
+    #         device_manager = display.get_device_manager()
+    #         device = device_manager.get_client_pointer()
+    #         device.grab(self.get_window(), Gdk.GrabOwnership.NONE, False, Gdk.EventMask.BUTTON_PRESS_MASK, None, Gdk.CURRENT_TIME)
+    #         self.boton_primario_simulado_presionado = True
+    #     elif not presionado and self.click_derecho_pulsado:
+    #         print("Sale")
+    #         # self.click_derecho_pulsado = False
+    #         # evento_simulado = Gdk.Event.new(Gdk.EventType.BUTTON_RELEASE)
+    #         # evento_simulado.button = Gdk.BUTTON_PRIMARY  # Botón izquierdo del ratón
+    #         # self.emit("button-release-event", evento_simulado)
+    #         display = Gdk.Display.get_default()
+    #         device_manager = display.get_device_manager()
+    #         device = device_manager.get_client_pointer()
+    #         device.ungrab(Gdk.CURRENT_TIME)
+    #         self.boton_primario_simulado_presionado = False
+
+    # def on_button_press_zoom_mouse(self, widget, event):
+    #     if event.button == Gdk.BUTTON_SECONDARY:  # Botón derecho del ratón
+    #         print("Botón derecho del ratón presionado")
+    #         #self.click_derecho_pulsado = True
+    #         self.toolbar.zoom()
+    #         self.simular_clic_primario(True)
+    #         # evento_simulado = Gdk.Event.new(Gdk.EventType.BUTTON_PRESS)
+    #         # evento_simulado.button = Gdk.BUTTON_PRIMARY  # Botón primario del ratón
+    #         # self.emit("button-press-event", evento_simulado)
+
+    # def on_button_release_zoom_mouse(self, widget, event):
+    #     if event.button == Gdk.BUTTON_SECONDARY:  # Botón derecho del ratón
+    #         print("Botón derecho del ratón liberado")
+    #         #self.click_derecho_pulsado = False
+    #         self.toolbar.zoom()
+    #         self.simular_clic_primario(False)
+    #         # evento_simulado = Gdk.Event.new(Gdk.EventType.BUTTON_RELEASE)
+    #         # evento_simulado.button = Gdk.BUTTON_PRIMARY  # Botón primario del ratón
+    #         # self.emit("button-release-event", evento_simulado)
+
+    # --------------- PANNING RATON EVENTOS RATON ---------------
+    def on_button_press_panning_mouse(self, widget, event):
+        # BOTON ANTERIOR DEL RATON
+        if event.button == 8:
+            print("ENTRAMOS EN EL PANNING")
+            self.panning = False
+            self.toolbar.pan()
+
+    def on_button_release_panning_mouse(self, widget, event):
+        # BOTON ANTERIOR DEL RATON
+        #if event.button == Gdk.BUTTON_SECONDARY and event.button == Gdk.BUTTON_PRIMARY:
+        if event.button == 8:
+            print("SALIMOS EN EL PANNING")
+            self.panning = False
+            self.toolbar.pan()
+
+    def on_button_press_zoom_mouse(self, widget, event):
+        # BOTON SIGUIENTE DEL RATON
+        if event.button == 9:
+            print("ENTRAMOS EN EL ZOOM")
+            self.toolbar.zoom()
+
+
+    def on_button_release_zoom_mouse(self, widget, event):
+        # BOTON SIGUIENTE DEL RATON
+        if event.button == 9:
+            print("ENTRAMOS EN EL ZOOM")
+            self.toolbar.zoom()
+
+
+
     def on_button_siguiente_clicked(self, widget):
+
+        self.windowing_center_8_bits = 127
+        self.windowing_width_8_bits = 255
+        self.windowing_center_16_bits = 32767
+        self.windowing_width_16_bits = 65535
 
         if len(self.lista_imagenes) == 0:
             raise Exception("La lista esta vacia")
@@ -663,47 +801,61 @@ class Vistaesperimento(Gtk.Window):
         #self.viewport.queue_draw()
 
     def on_button_delete_foto_actual_clicked(self, widget):
+
+        #Caso de si eliminas la ultima foto hacer clear y hacer desaparecer a los botones JEJE
+
+        self.windowing_center_8_bits = 127
+        self.windowing_width_8_bits = 255
+        self.windowing_center_16_bits = 32767
+        self.windowing_width_16_bits = 65535
+
         if len(self.lista_imagenes) == 0:
             raise Exception("La lista esta vacia")
 
-        del self.lista_imagenes[self.posicion_lista]
+        if self.posicion_lista < len(self.lista_imagenes):
+            del self.lista_imagenes[self.posicion_lista]
 
-        if len(self.lista_imagenes)-1 ==  self.posicion_lista:
-            self.posicion_lista = self.posicion_lista - 1
+            # Verificar si la lista tiene elementos después de borrar
+            if self.lista_imagenes:
+                # Ajustar la posición si es necesario
+                if self.posicion_lista >= len(self.lista_imagenes):
+                    self.posicion_lista -= 1
 
-        #del self.lista_imagenes[self.posicion_lista]
+                # Mostrar la siguiente foto
+                self.load_image_vista_data(self.lista_imagenes[self.posicion_lista])
+                self.show_image_8_bits(self.imagecv_8_bits_dsplayed)
+                self.show_image_16_bits(self.imagecv_16_bits_dsplayed)
+            else:
+                self.ax8.clear()
+                self.ax16.clear()
+                self.ax8.axis('off')
+                self.ax16.axis('off')
+                self.canvas8.draw()
+                self.button3.hide()
+                self.button4.hide()
+                self.button5.hide()
+                self.button_delete.hide()
 
-        # for child in self.viewport.get_children():
-        #     self.viewport.remove(child)
-        # for child in self.viewport2.get_children():
-        #     self.viewport2.remove(child)
+        return True
 
-        if len(self.lista_imagenes) == 0:
-            self.ax8.clear()
-            self.ax16.clear()
-            self.button3.hide()
-            self.button4.hide()
-            self.button5.hide()
-            self.button_delete.hide()
-        else:
-            if len(self.lista_imagenes) == 1:
-                self.posicion_lista = 0
-
-            print(self.posicion_lista)
-            self.load_image_vista_data(self.lista_imagenes[self.posicion_lista])
-            self.show_image_8_bits(self.imagecv_8_bits_dsplayed)
-            self.show_image_16_bits(self.imagecv_16_bits_dsplayed)
 
     #Hacer boton de borrar la lista y boton de borrar una foto
     def on_button_delete_lista_clicked(self, widget):
         if len(self.lista_imagenes) == 0:
             raise Exception("La lista esta vacia")
 
-        # for child in self.viewport.get_children():
-        #     self.viewport.remove(child)
-        # for child in self.viewport2.get_children():
-        #     self.viewport2.remove(child)
+        self.windowing_center_8_bits = 127
+        self.windowing_width_8_bits = 255
+        self.windowing_center_16_bits = 32767
+        self.windowing_width_16_bits = 65535
+
         self.lista_imagenes.clear()
+        self.posicion_lista = 0
+        self.ax8.clear()
+        self.ax16.clear()
+        self.ax8.axis('off')
+        self.ax16.axis('off')
+        self.canvas8.draw()
 
         self.button3.hide()
         self.button4.hide()
