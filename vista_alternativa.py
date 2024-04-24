@@ -454,7 +454,7 @@ class Vistaesperimento(Gtk.Window):
             self.show_image_8_bits(self.imagecv_8_bits_dsplayed)
             self.show_image_16_bits(self.imagecv_16_bits_dsplayed)
             #self.viewport.queue_draw()
-            self.viewport.draw()
+            #self.viewport.draw()
 
         elif response == Gtk.ResponseType.CANCEL:
             print("Cancel clicked")

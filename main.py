@@ -1,10 +1,6 @@
 from vista.vista import Vista
 from vista_alternativa import Vistaesperimento
 from vista.vistaopengl import VistaOpenGl
-from vista.OTRAvistaopengl import OtraVIstaOpenGl
-from vista.vistaopenglexperimento import VistaOpenGl2
-from vista.vistaprueba import VistaOpenGl3
-from vista.vistawebcarlos import WebTutorial
 from modelo.modelo import Modelo
 from controlador.controlador import Controlador
 import gi
