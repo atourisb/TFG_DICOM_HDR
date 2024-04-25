@@ -216,6 +216,7 @@ class Vistaesperimento(Gtk.Window):
     def show_image_8_bits_mantiene_zoom(self, image, xlim8, ylim8):
         self.ax8.clear()
         self.ax8.imshow(image, cmap='gray')
+        self.ax8.set_title("Version 8 Bits")
         self.ax8.axis('off')
         self.ax8.set_xlim(xlim8)
         self.ax8.set_ylim(ylim8)
@@ -233,6 +234,7 @@ class Vistaesperimento(Gtk.Window):
         print(image)
         self.ax16.clear()
         self.ax16.imshow(image, cmap='gray')
+        self.ax16.set_title("Version 16 Bits")
         self.ax16.axis('off')
         self.ax16.set_xlim(xlim16)
         self.ax16.set_ylim(ylim16)
