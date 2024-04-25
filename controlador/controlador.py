@@ -1,17 +1,10 @@
-from utils.dicom_utils import DicomUtils
-from utils.image_converter import ImageConverter
-from utils.indexTracker import IndexTracker
-from modelo.dicom_data import DicomData
-from vista.vista import Vista
 import json
 from excepciones.excepciones import *
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
 
 # Controlador
-#Puedo hacer una cola o una pila para ver y mostrar las imagenes y asi tener persistencia? una array y poder moverte borrar y tal despues de cargar las imagenes y leerlas o algo.
-# Que haya una opcion de ver una sola imagen o la opcion de que cargue todas las imagenes y asi puedo usar lo del scroll una vez estan cargadas.
+
 class Controlador:
 
     mensajes = None
@@ -217,8 +210,6 @@ class Controlador:
         except ListaVaciaError as e:
             print("Error", e)
             raise
-
-#Metodos para la vista
 
     def transformacion_y_guardado_vista(self, ruta):
         self.cargar_unico_dicom(ruta)
