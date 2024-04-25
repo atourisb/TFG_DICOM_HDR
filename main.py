@@ -1,6 +1,4 @@
 from vista.vista import Vista
-from vista_alternativa import Vistaesperimento
-from vista.vistaopengl import VistaOpenGl
 from modelo.modelo import Modelo
 from controlador.controlador import Controlador
 import gi
@@ -18,9 +16,7 @@ def main():
 
     controlador = Controlador(modelo)
 
-    #vista = Vista(controlador)
-
-    vista = Vistaesperimento(controlador)
+    vista = Vista(controlador)
     # Esto tiene que estar sin comentar para que funciona las vistas viejas
     vista.connect("destroy", Gtk.main_quit)
     Gtk.main()
