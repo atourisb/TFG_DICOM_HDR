@@ -163,10 +163,10 @@ class Vista(Gtk.Window):
         self.timeout_id = None
 
         #Para reconocer el movimiento en vertical y que funque el cambio de window center
-        self.viewport.connect("motion-notify-event", self.on_motion_notify_center)
-        self.viewport.connect("motion-notify-event", self.on_motion_notify_width)
-        self.viewport.connect("button-press-event", self.on_button_press)
-        self.viewport.connect("button-release-event", self.on_button_release)
+        self.viewport.connect("motion-notify-event", self.evento_movimiento_vertical_window_center)
+        self.viewport.connect("motion-notify-event", self.evento_movimiento_horizontal_window_width)
+        self.viewport.connect("button-press-event", self.boton_primario_presionado_windowing)
+        self.viewport.connect("button-release-event", self.boton_primario_liberado_windowing)
 
         # Configurar eventos de teclado
         self.connect("key-press-event", self.logica_presionar_z_zoom)
@@ -181,8 +181,8 @@ class Vista(Gtk.Window):
         self.connect("button-release-event", self.liberado_boton_atras_raton_panning)
 
         # Evento windowing con el siguiente del raton
-        self.connect("button-press-event", self.presionado_boton_raton_windowing)
-        self.connect("button-release-event", self.liberado_boton_raton_windowing)
+        self.connect("button-press-event", self.presionado_boton_secundario_raton_windowing)
+        self.connect("button-release-event", self.liberado_boton_secundario_raton_windowing)
 
         # Mostrar todos los elementos de la ventana
         self.show_all()
@@ -356,7 +356,8 @@ class Vista(Gtk.Window):
 
 #---------------------------------------------- METODOS PARA WINDOWING ------------------------------------------------#
 
-    def aplicar_windowing_imagen_8_bits(self, image, window_center, window_width):
+    #Metodos que calculan y obtienen los valores de los pixeles despues de modificar el window_center o el window_width
+    def calcular_windowing_imagen_8_bits(self, image, window_center, window_width):
         # Calcular los límites del rango de píxeles
         min_value = window_center - (window_width / 2)
         max_value = window_center + (window_width / 2)
@@ -365,7 +366,7 @@ class Vista(Gtk.Window):
         windowed_image = np.clip((image - min_value) / window_width * 255, 0, 255).astype(np.uint8)
         return windowed_image
 
-    def aplicar_windowing_imagen_16_bits(self, image, window_center, window_width):
+    def calcular_windowing_imagen_16_bits(self, image, window_center, window_width):
         # Calcular los límites del rango de píxeles
         min_value = window_center - (window_width / 2)
         max_value = window_center + (window_width / 2)
@@ -505,11 +506,11 @@ class Vista(Gtk.Window):
             self.toolbar.pan()
 
     #------------------ EVENTOS WINDOWING RATON -----------------
-    def presionado_boton_raton_windowing(self, widget, event):
+    def presionado_boton_secundario_raton_windowing(self, widget, event):
         if event.button == Gdk.BUTTON_SECONDARY:
             self.value_windowing_active = True
 
-    def liberado_boton_raton_windowing(self, widget, event):
+    def liberado_boton_secundario_raton_windowing(self, widget, event):
         if event.button == Gdk.BUTTON_SECONDARY:
             self.value_windowing_active = False
 
@@ -560,51 +561,7 @@ class Vista(Gtk.Window):
         self.windowing_width_8_bits = round(percentage * 255 / 100)
         self.aplicar_windowing_viewport_8_bits()
 
-    #cambiar nombre a algo que haga referencia a que es el metodo de cuando clickas con el raton en el viewport
-    def aplicar_windowing_viewport_8_bits(self):
-        # Obtener los valores de window_center y window_width de las barras de desplazamiento
-        print(self.windowing_center_8_bits)
-        print(self.windowing_width_8_bits)
-
-        # Aplicar windowing a la imagen cargada
-        if hasattr(self, 'imagecv_8_bits'):
-            print("entra")
-            self.imagecv_8_bits_displayed = self.aplicar_windowing_imagen_8_bits(self.imagecv_8_bits, self.windowing_center_8_bits, self.windowing_width_8_bits)
-
-            self.coordenadas_x_8_bits = self.ax_8_bits.get_xlim()
-            self.coordenadas_y_8_bits = self.ax_8_bits.get_ylim()
-            self.actualizar_imagen_8_bits(self.imagecv_8_bits_displayed, self.coordenadas_x_8_bits, self.coordenadas_y_8_bits)
-
-        print("LLEGA AQUI ESPROPIESE aplicar_windowing_viewport_8_bits")
-
-        # Detener la propagación del evento
-        return False
-
-    def aplicar_windowing_viewport_16_bits(self):
-        # Obtener los valores de window_center y window_width de las barras de desplazamiento
-        window_center = self.windowing_center_16_bits
-        print(window_center)
-        window_width = self.windowing_width_16_bits
-        print(window_width)
-
-        # Aplicar windowing a la imagen cargada
-        if hasattr(self, 'imagecv_16_bits'):
-            print("entra")
-            self.imagecv_16_bits_displayed = self.aplicar_windowing_imagen_16_bits(self.imagecv_16_bits, window_center, window_width)
-
-            self.coordenadas_x_16_bits = self.ax_16_bits.get_xlim()
-            self.coordenadas_y_16_bits = self.ax_16_bits.get_ylim()
-
-            self.actualizar_imagen_16_bits(self.imagecv_16_bits_displayed, self.coordenadas_x_16_bits, self.coordenadas_y_16_bits)
-
-        self.sincronizar_valores_windowing_8_bits()
-
-        # Reiniciar el ID del temporizador
-        self.timeout_id = None
-
-        return False
-
-    def on_button_press(self, viewport, event):
+    def boton_primario_presionado_windowing(self, viewport, event):
         if self.value_windowing_active:
             if event.button == Gdk.BUTTON_PRIMARY:  # Botón izquierdo del ratón
                 self.start_y = event.y
@@ -613,13 +570,41 @@ class Vista(Gtk.Window):
                 self.start_window_width = self.windowing_width_16_bits
                 self.mouse_pressed = True
 
-    def on_button_release(self, viewport, event):
+    def boton_primario_liberado_windowing(self, viewport, event):
         if self.value_windowing_active:
             if event.button == Gdk.BUTTON_PRIMARY:  # Botón izquierdo del ratón
                 self.aplicar_windowing_viewport_16_bits()
                 self.mouse_pressed = False
 
-    def on_motion_notify_center(self, widget, event):
+    def aplicar_windowing_viewport_8_bits(self):
+        # Obtener los valores de window_center y window_width de las barras de desplazamiento
+        print(self.windowing_center_8_bits)
+        print(self.windowing_width_8_bits)
+        # Aplicar windowing a la imagen cargada
+        if hasattr(self, 'imagecv_8_bits'):
+            self.imagecv_8_bits_displayed = self.calcular_windowing_imagen_8_bits(self.imagecv_8_bits, self.windowing_center_8_bits, self.windowing_width_8_bits)
+            self.coordenadas_x_8_bits = self.ax_8_bits.get_xlim()
+            self.coordenadas_y_8_bits = self.ax_8_bits.get_ylim()
+            self.actualizar_imagen_8_bits(self.imagecv_8_bits_displayed, self.coordenadas_x_8_bits, self.coordenadas_y_8_bits)
+        return False
+
+    #Funcion encargada de calcular y aplicar los cambios en la imagen y propagarlos a la imagen de 8 bits de profundidad
+    def aplicar_windowing_viewport_16_bits(self):
+        # Obtener los valores de window_center y window_width de las barras de desplazamiento
+        print(self.windowing_center_16_bits)
+        print(self.windowing_width_16_bits)
+
+        # Aplicar windowing a la imagen cargada
+        if hasattr(self, 'imagecv_16_bits'):
+            self.imagecv_16_bits_displayed = self.calcular_windowing_imagen_16_bits(self.imagecv_16_bits, self.windowing_center_16_bits, self.windowing_width_16_bits)
+            self.coordenadas_x_16_bits = self.ax_16_bits.get_xlim()
+            self.coordenadas_y_16_bits = self.ax_16_bits.get_ylim()
+            self.actualizar_imagen_16_bits(self.imagecv_16_bits_displayed, self.coordenadas_x_16_bits, self.coordenadas_y_16_bits)
+
+        self.sincronizar_valores_windowing_8_bits()
+        return False
+
+    def evento_movimiento_vertical_window_center(self, widget, event):
         if self.value_windowing_active:
             if self.mouse_pressed:
                 delta_y = self.start_y - event.y  # Calcula el cambio en la posición vertical del ratón
@@ -636,7 +621,7 @@ class Vista(Gtk.Window):
 
                 print("New window_center:", self.windowing_center_16_bits)
 
-    def on_motion_notify_width(self, widget, event):
+    def evento_movimiento_horizontal_window_width(self, widget, event):
         if self.value_windowing_active:
             if self.mouse_pressed:
                 delta_x = self.start_x - event.x  # Calcula el cambio en la posición vertical del ratón
