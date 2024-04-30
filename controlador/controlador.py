@@ -18,9 +18,6 @@ class Controlador:
         except FileNotFoundError:
             raise ArchivoNoEncontradoError(ruta_archivo)
 
-    # def mostrar_ventana(self):
-    #     self.vista.mostrar_ventana()
-
 #------------------------------------- Metodos para cargar dicom en el sistema ----------------------------------------#
 
     def cargar_unico_dicom(self, ruta):
@@ -45,7 +42,6 @@ class Controlador:
         try:
             print(self.mensajes['visualizar_ultimo_dicom'])
             data = self.modelo.devolver_ultimo_dicom_data_de_la_lista()
-            #self.vista.mostrar_dicom_original_y_dicom_transformado(data)
         except ListaVaciaError as e:
             print("Error", e)
             raise
@@ -54,7 +50,6 @@ class Controlador:
         try:
             print(self.mensajes['visualizar_dicom_en_posicion'])
             data = self.modelo.devolver_dicom_data_en_posicion_de_la_lista(posicion)
-            #self.vista.mostrar_dicom_original_y_dicom_transformado(data)
         except (ListaVaciaError, PosicionInvalidaError) as e:
             print("Error", e)
             raise
@@ -63,8 +58,6 @@ class Controlador:
         try:
             print(self.mensajes['visualizar_todos_los_dicom'])
             lista = self.modelo.devolver_todos_los_dicom_data_de_la_lista()
-            #for element in lista:
-                #self.vista.mostrar_dicom_original_y_dicom_transformado(element)
         except ListaVaciaError as e:
             print("Error", e)
             raise
@@ -151,7 +144,6 @@ class Controlador:
     def mostrar_cantidad_de_dicom_cargados(self):
         print(self.mensajes['mostrar_cantidad_de_dicom_cargados'])
         lista = self.modelo.devolver_todos_los_dicom_data_de_la_lista()
-        #self.vista.mostrar_cantidad_de_la_lista(lista)
 
 #---------------------------------------- Metodos para guardar tiff 16 bits -------------------------------------------#
 

@@ -17,10 +17,10 @@ class Vista(Gtk.Window):
 
     def __init__(self, controlador):
 
-        self.start_window_center = None
-        self.start_window_width = None
-        self.start_y = None
-        self.start_x = None
+        self.start_window_center = int
+        self.start_window_width = int
+        self.start_y = float
+        self.start_x = float
 
         self.controlador = controlador
 
@@ -48,9 +48,6 @@ class Vista(Gtk.Window):
         self.box_botones.set_spacing(0)
 
         #------------------------------------- Anhadimos los diferentes botones ---------------------------------------#
-
-        self.scale_center_16_bits = 32767
-        self.scale_width_16_bits = 65535
 
         self.windowing_center_8_bits = 127
         self.windowing_width_8_bits = 255
@@ -110,10 +107,10 @@ class Vista(Gtk.Window):
 
         # --------------------------------------------- Primera imagen ------------------------------------------------#
 
-        self.imagecv_8_bits = None
-        self.imagecv_8_bits_displayed = None
-        self.imagecv_16_bits = None
-        self.imagecv_16_bits_displayed = None
+        self.imagecv_8_bits = np.ndarray
+        self.imagecv_8_bits_displayed = np.ndarray
+        self.imagecv_16_bits = np.ndarray
+        self.imagecv_16_bits_displayed = np.ndarray
 
         # Crear el widget para representar la imagen
         self.scrolledwindow = Gtk.ScrolledWindow()  # added
@@ -131,10 +128,10 @@ class Vista(Gtk.Window):
         self.ax_16_bits.axis('off')
 
         #Valores de zoom y posicion de la imagen
-        self.coordenadas_x_8_bits = None
-        self.coordenadas_y_8_bits = None
-        self.coordenadas_x_16_bits = None
-        self.coordenadas_y_16_bits = None
+        self.coordenadas_x_8_bits = tuple
+        self.coordenadas_y_8_bits = tuple
+        self.coordenadas_x_16_bits = tuple
+        self.coordenadas_y_16_bits = tuple
 
         self.canvas = FigureCanvas(self.figure)
 
