@@ -11,7 +11,7 @@ class Controlador:
 
     def __init__(self, modelo):
         self.modelo = modelo
-        ruta_archivo = '/home/rainor/PycharmProjects/tfg/utils/archivo_de_mensajes.json'
+        ruta_archivo = r'C:\Users\Emphr\Desktop\tfg\utils\archivo_de_mensajes.json'
         try:
             with open(ruta_archivo, 'r') as file:
                 self.mensajes = json.load(file)
@@ -73,7 +73,7 @@ class Controlador:
 
     def transformar_ultimo_dicom_tiff_16_bits(self):
         try:
-            print(self.mensajes['transformar_ultimo_dicom'])
+            print(self.mensajes['transformar_ultimo_dicom_16_bits'])
             self.modelo.transformar_ultimo_dicom_data_de_la_lista_tiff_16_bits()
         except ListaVaciaError as e:
             print("Error", e)
@@ -81,7 +81,7 @@ class Controlador:
 
     def transformar_dicom_en_posicion_tiff_16_bits(self, posicion):
         try:
-            print(self.mensajes['transformar_dicom_en_posicion'])
+            print(self.mensajes['transformar_dicom_en_posicion_16_bits'])
             self.modelo.transformar_dicom_data_en_posicion_de_la_lista_tiff_16_bits(posicion)
         except (ListaVaciaError, PosicionInvalidaError) as e:
             print("Error", e)
@@ -90,7 +90,7 @@ class Controlador:
 
     def transformar_todos_los_dicom_tiff_16_bits(self):
         try:
-            print(self.mensajes['transformar_todos_los_dicom'])
+            print(self.mensajes['transformar_todos_los_dicom_16_bits'])
             self.modelo.transformar_todos_los_dicom_data_de_la_lista_tiff_16_bits()
         except ListaVaciaError as e:
             print("Error", e)
@@ -100,7 +100,7 @@ class Controlador:
 
     def transformar_ultimo_dicom_tiff_8_bits(self):
         try:
-            print(self.mensajes['transformar_ultimo_dicom'])
+            print(self.mensajes['transformar_ultimo_dicom_8_bits'])
             self.modelo.transformar_ultimo_dicom_data_de_la_lista_tiff_8_bits()
         except ListaVaciaError as e:
             print("Error", e)
@@ -108,7 +108,7 @@ class Controlador:
 
     def transformar_dicom_en_posicion_tiff_8_bits(self, posicion):
         try:
-            print(self.mensajes['transformar_dicom_en_posicion'])
+            print(self.mensajes['transformar_dicom_en_posicion_8_bits'])
             self.modelo.transformar_dicom_data_en_posicion_de_la_lista_tiff_8_bits(posicion)
         except (ListaVaciaError, PosicionInvalidaError) as e:
             print("Error", e)
@@ -116,7 +116,7 @@ class Controlador:
 
     def transformar_todos_los_dicom_tiff_8_bits(self):
         try:
-            print(self.mensajes['transformar_todos_los_dicom'])
+            print(self.mensajes['transformar_todos_los_dicom_8_bits'])
             self.modelo.transformar_todos_los_dicom_data_de_la_lista_tiff_8_bits()
         except ListaVaciaError as e:
             print("Error", e)
@@ -157,7 +157,7 @@ class Controlador:
 
     def guardar_ultimo_dicom_tiff_16_bits(self):
         try:
-            print(self.mensajes['guardar_ultimo_dicom'])
+            print(self.mensajes['guardar_ultimo_dicom_16_bits'])
             output_path = self.modelo.guardar_ultimo_dicom_data_de_la_lista_16_bits()
             return output_path
         except ListaVaciaError as e:
@@ -166,7 +166,7 @@ class Controlador:
 
     def guardar_dicom_en_posicion_tiff_16_bits(self, posicion):
         try:
-            print(self.mensajes['guardar_dicom_en_posicion'])
+            print(self.mensajes['guardar_dicom_en_posicion_16_bits'])
             output_path = self.modelo.guardar_dicom_data_en_posicion_de_la_lista_16_bits(posicion)
             return output_path
         except (ListaVaciaError, PosicionInvalidaError) as e:
@@ -176,7 +176,7 @@ class Controlador:
 
     def guardar_todos_los_dicom_tiff_16_bits(self):
         try:
-            print(self.mensajes['guardar_todos_los_dicom'])
+            print(self.mensajes['guardar_todos_los_dicom_16_bits'])
             self.modelo.guardar_todos_los_dicom_data_de_la_lista_16_bits()
         except ListaVaciaError as e:
             print("Error", e)
@@ -186,7 +186,7 @@ class Controlador:
 
     def guardar_ultimo_dicom_tiff_8_bits(self):
         try:
-            print(self.mensajes['guardar_ultimo_dicom'])
+            print(self.mensajes['guardar_ultimo_dicom_8_bits'])
             output_path =self.modelo.guardar_ultimo_dicom_data_de_la_lista_8_bits()
             return output_path
         except ListaVaciaError as e:
@@ -195,7 +195,7 @@ class Controlador:
 
     def guardar_dicom_en_posicion_tiff_8_bits(self, posicion):
         try:
-            print(self.mensajes['guardar_dicom_en_posicion'])
+            print(self.mensajes['guardar_dicom_en_posicion_8_bits'])
             output_path = self.modelo.guardar_dicom_data_en_posicion_de_la_lista_8_bits(posicion)
             return output_path
         except (ListaVaciaError, PosicionInvalidaError) as e:
@@ -205,7 +205,7 @@ class Controlador:
 
     def guardar_todos_los_dicom_tiff_8_bits(self):
         try:
-            print(self.mensajes['guardar_todos_los_dicom'])
+            print(self.mensajes['guardar_todos_los_dicom_8_bits'])
             self.modelo.guardar_todos_los_dicom_data_de_la_lista_8_bits()
         except ListaVaciaError as e:
             print("Error", e)

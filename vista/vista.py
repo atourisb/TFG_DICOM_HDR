@@ -120,9 +120,10 @@ class Vista(Gtk.Window):
         self.viewport = Gtk.Viewport()  # added
 
         # Agregacion para el canvas
+        #TENIA 10 6 figsize
         self.figure, axs = plt.subplots(nrows=1, ncols=2, figsize=(10, 6), sharex=True, sharey=True, frameon=False)
         self.figure.tight_layout()
-        self.figure.subplots_adjust(wspace=0, hspace=0, left=0, right=1, bottom=0, top=1)
+        self.figure.subplots_adjust(wspace=0.01, hspace=0.01, left=0.01, right=0.99, bottom=0.01, top=0.97)
 
         self.ax_8_bits = axs[0]
         self.ax_8_bits.axis('off')
@@ -137,7 +138,7 @@ class Vista(Gtk.Window):
 
         self.canvas = FigureCanvas(self.figure)
 
-        self.toolbar = NavigationToolbar(self.canvas, self)
+        self.toolbar = NavigationToolbar(self.canvas)
         self.box_botones.pack_start(self.toolbar, False, False, 10)
 
         # Agregar el lienzo al viewport
@@ -212,7 +213,6 @@ class Vista(Gtk.Window):
         self.canvas.draw()
 
     def mostrar_imagen_16_bits(self, image):
-        print(image)
         self.ax_16_bits.clear()
         self.ax_16_bits.imshow(image, cmap='gray')
         self.ax_16_bits.set_title("Version 16 Bits")
@@ -220,7 +220,6 @@ class Vista(Gtk.Window):
         self.canvas.draw()
 
     def actualizar_imagen_16_bits(self, image, coordenadas_x_16_bits, coordenadas_y_16_bits):
-        print(image)
         self.ax_16_bits.clear()
         self.ax_16_bits.imshow(image, cmap='gray')
         self.ax_16_bits.set_title("Version 16 Bits")
@@ -257,8 +256,6 @@ class Vista(Gtk.Window):
 
             self.mostrar_imagen_8_bits(self.imagecv_8_bits_displayed)
             self.mostrar_imagen_16_bits(self.imagecv_16_bits_displayed)
-
-            print(self.imagecv_16_bits_displayed)
 
         except Exception as e:
             print("Error al cargar la imagen:", e)
@@ -337,7 +334,7 @@ class Vista(Gtk.Window):
             self.mostrar_imagen_8_bits(self.imagecv_8_bits_displayed)
             self.mostrar_imagen_16_bits(self.imagecv_16_bits_displayed)
 
-            #Hacer visibles los botones para movernos entre imagenes
+            # Hacer visibles los botones para movernos entre imagenes
             self.boton_anterior.show()
             self.boton_eliminar_foto.show()
             self.boton_siguiente.show()
@@ -356,7 +353,7 @@ class Vista(Gtk.Window):
 
 #---------------------------------------------- METODOS PARA WINDOWING ------------------------------------------------#
 
-    #Metodos que calculan y obtienen los valores de los pixeles despues de modificar el window_center o el window_width
+    # Metodos que calculan y obtienen los valores de los pixeles despues de modificar el window_center o el window_width
     def calcular_windowing_imagen_8_bits(self, image, window_center, window_width):
         # Calcular los límites del rango de píxeles
         min_value = window_center - (window_width / 2)
@@ -518,24 +515,22 @@ class Vista(Gtk.Window):
 
     #------------------- EVENTOS PANNING RATON-------------------
     def presionado_boton_atras_raton_panning(self, widget, event):
-        if event.button == 8:
+        if event.button == 4:
             self.toolbar.pan()
 
     def liberado_boton_atras_raton_panning(self, widget, event):
-        if event.button == 8:
+        if event.button == 4:
             self.toolbar.pan()
 
     #------------------------------------------------------------
 
     #-------------------- EVENTOS ZOOM RATON --------------------
     def presionado_boton_siguiente_raton_zoom(self, widget, event):
-        if event.button == 9:
-            print("ENTRAMOS EN EL ZOOM")
+        if event.button == 5:
             self.toolbar.zoom()
 
     def liberado_boton_siguiente_raton_zoom(self, widget, event):
-        if event.button == 9:
-            print("ENTRAMOS EN EL ZOOM")
+        if event.button == 5:
             self.toolbar.zoom()
 
     #------------------------------------------------------------
@@ -545,20 +540,20 @@ class Vista(Gtk.Window):
             self.value_windowing_active = True
         else:
             self.value_windowing_active = False
-        print("CheckButton state is", self.value_windowing_active)
+        print("Windowing permanente ", self.value_windowing_active)
 
     def sincronizar_valores_windowing_8_bits(self):
         value_center_16_bits = self.windowing_center_16_bits
         value_width_16_bits = self.windowing_width_16_bits
 
         percentage = value_center_16_bits / 65535 * 100
-        print("Porcentaje de la barra 1:", percentage)
         self.windowing_center_8_bits = round(percentage * 255 / 100)
+        print("Valor window center de la imagen de 8 bits: ", self.windowing_center_8_bits)
         self.aplicar_windowing_viewport_8_bits()
 
         percentage = value_width_16_bits / 65535 * 100
-        print("Porcentaje de la barra 2:", percentage)
         self.windowing_width_8_bits = round(percentage * 255 / 100)
+        print("Valor window width de la imagen de 8 bits: ", self.windowing_width_8_bits)
         self.aplicar_windowing_viewport_8_bits()
 
     def boton_primario_presionado_windowing(self, viewport, event):
@@ -577,9 +572,6 @@ class Vista(Gtk.Window):
                 self.mouse_pressed = False
 
     def aplicar_windowing_viewport_8_bits(self):
-        # Obtener los valores de window_center y window_width de las barras de desplazamiento
-        print(self.windowing_center_8_bits)
-        print(self.windowing_width_8_bits)
         # Aplicar windowing a la imagen cargada
         if hasattr(self, 'imagecv_8_bits'):
             self.imagecv_8_bits_displayed = self.calcular_windowing_imagen_8_bits(self.imagecv_8_bits, self.windowing_center_8_bits, self.windowing_width_8_bits)
@@ -591,8 +583,8 @@ class Vista(Gtk.Window):
     #Funcion encargada de calcular y aplicar los cambios en la imagen y propagarlos a la imagen de 8 bits de profundidad
     def aplicar_windowing_viewport_16_bits(self):
         # Obtener los valores de window_center y window_width de las barras de desplazamiento
-        print(self.windowing_center_16_bits)
-        print(self.windowing_width_16_bits)
+        print("Valor window center de la imagen de 16 bits: ", self.windowing_center_16_bits)
+        print("Valor window width de la imagen de 16 bits: ", self.windowing_width_16_bits)
 
         # Aplicar windowing a la imagen cargada
         if hasattr(self, 'imagecv_16_bits'):

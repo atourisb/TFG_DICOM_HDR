@@ -106,8 +106,6 @@ class ImageConverter:
         # ds = dicom.get_ds()
         # for element in ds:
         #     print(element)
-        print ("minimo ", dicom.get_min_pixel_value())
-        print("maximo ", dicom.get_max_pixel_value())
 
         # LUTs: Modality LUT -> VOI LUT -> Presentation LUT
         # Aplicamos la funcion apply_modality_lut teniendo en cuenta los valores Rescale slope, Rescale Intercept
@@ -241,8 +239,6 @@ class ImageConverter:
         # ds = dicom.get_ds()
         # for element in ds:
         #     print(element)
-        print ("minimo ", dicom.get_min_pixel_value())
-        print("maximo ", dicom.get_max_pixel_value())
 
         # LUTs: Modality LUT -> VOI LUT -> Presentation LUT
         # Aplicamos la funcion apply_modality_lut teniendo en cuenta los valores Rescale slope, Rescale Intercept
