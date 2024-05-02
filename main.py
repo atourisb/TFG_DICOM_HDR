@@ -1,6 +1,7 @@
 from vista.vista import Vista
 from modelo.modelo import Modelo
 from controlador.controlador import Controlador
+import os
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk

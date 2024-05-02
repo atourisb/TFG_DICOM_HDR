@@ -67,7 +67,11 @@ class DicomUtils:
     #Funcion que no se usa pero por lo que pueda ser, dejo aqui
     def print_directory(self):
         # Especifica el directorio que deseas listar
-        directorio = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/"
+        dir_actual = os.path.dirname(__file__)
+        dir_padre_actual = os.path.dirname(dir_actual)
+        directorio = os.path.join(dir_padre_actual, "ImagenesDICOM")
+
+        #directorio = "/home/rainor/PycharmProjects/tfg/ImagenesDICOM/"
         # Construye el comando
         comando = f"ls -l {directorio}"
         # Ejecuta el comando y captura la salida

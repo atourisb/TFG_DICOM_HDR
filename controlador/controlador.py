@@ -1,5 +1,6 @@
 import json
 from excepciones.excepciones import *
+import os
 import gi
 gi.require_version("Gtk", "3.0")
 
@@ -11,12 +12,19 @@ class Controlador:
 
     def __init__(self, modelo):
         self.modelo = modelo
-        ruta_archivo = r'C:\Users\Emphr\Desktop\tfg\utils\archivo_de_mensajes.json'
+
+        #Esto nos permite tener un path relativo para que funcione en cualquier ordenador
+        dir_actual = os.path.dirname(__file__)
+        dir_padre_actual = os.path.dirname(dir_actual)
+        self.ruta_archivo = os.path.join(dir_padre_actual, "utils")
+        self.ruta_archivo = os.path.join(self.ruta_archivo, "archivo_de_mensajes.json")
+
+        #ruta_archivo = r'C:\Users\Emphr\Desktop\tfg\utils\archivo_de_mensajes.json'
         try:
-            with open(ruta_archivo, 'r') as file:
+            with open(self.ruta_archivo, 'r') as file:
                 self.mensajes = json.load(file)
         except FileNotFoundError:
-            raise ArchivoNoEncontradoError(ruta_archivo)
+            raise ArchivoNoEncontradoError(self.ruta_archivo)
 
 #------------------------------------- Metodos para cargar dicom en el sistema ----------------------------------------#
 

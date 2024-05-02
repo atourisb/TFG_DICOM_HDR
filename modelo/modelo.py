@@ -15,6 +15,10 @@ class Modelo():
         self.dicom_utils = DicomUtils()
         self.image_converter = ImageConverter()
 
+        dir_actual = os.path.dirname(__file__)
+        dir_padre_actual = os.path.dirname(dir_actual)
+        self.dir_salida = os.path.join(dir_padre_actual, "salida")
+
     @property
     def dicom_data(self):
         # Lazy initialization: crea el objeto DicomData solo si es necesario
@@ -148,7 +152,7 @@ class Modelo():
         data = self.lista_dicom[-1]
 
         output_name = f"output_image_16_bits_{len(self.lista_dicom)}.tiff"
-        output_path = os.path.join(r"C:\Users\Emphr\Desktop\tfg\salida", output_name)
+        output_path = os.path.join(self.dir_salida, output_name)
         imageio.imsave(output_path, data.get_pixel_data_modified_16_bits(), format='tiff')
         print(f"Imagen TIFF guardada en: {output_path}")
         return output_path
@@ -162,7 +166,7 @@ class Modelo():
         data = self.lista_dicom[posicion]
 
         output_name = f"output_image_16_bits_{posicion}.tiff"
-        output_path = os.path.join(r"C:\Users\Emphr\Desktop\tfg\salida", output_name)
+        output_path = os.path.join(self.dir_salida, output_name)
         imageio.imsave(output_path, data.get_pixel_data_modified_16_bits(), format='tiff')
         print(f"Imagen TIFF guardada en: {output_path}")
         return output_path
@@ -177,7 +181,7 @@ class Modelo():
                 data = self.lista_dicom[i]
 
                 output_name = f"output_image_16_bits_{i}.tiff"
-                output_path = os.path.join(r"C:\Users\Emphr\Desktop\tfg\salida", output_name)
+                output_path = os.path.join(self.dir_salida, output_name)
                 imageio.imsave(output_path, data.get_pixel_data_modified_16_bits(), format='tiff')
                 print(f"Imagen TIFF guardada en: {output_path}")
 
@@ -190,7 +194,7 @@ class Modelo():
         data = self.lista_dicom[-1]
 
         output_name = f"output_image_8_bits_{len(self.lista_dicom)}.tiff"
-        output_path = os.path.join(r"C:\Users\Emphr\Desktop\tfg\salida", output_name)
+        output_path = os.path.join(self.dir_salida, output_name)
         imageio.imsave(output_path, data.get_pixel_data_modified_8_bits(), format='tiff')
         print(f"Imagen TIFF guardada en: {output_path}")
         return output_path
@@ -204,7 +208,7 @@ class Modelo():
         data = self.lista_dicom[posicion]
 
         output_name = f"output_image_8_bits_{posicion}.tiff"
-        output_path = os.path.join(r"C:\Users\Emphr\Desktop\tfg\salida", output_name)
+        output_path = os.path.join(self.dir_salida, output_name)
         imageio.imsave(output_path, data.get_pixel_data_modified_8_bits(), format='tiff')
         print(f"Imagen TIFF guardada en: {output_path}")
         return output_path
@@ -219,6 +223,6 @@ class Modelo():
                 data = self.lista_dicom[i]
 
                 output_name = f"output_image_8_bits_{i}.tiff"
-                output_path = os.path.join(r"C:\Users\Emphr\Desktop\tfg\salida", output_name)
+                output_path = os.path.join(self.dir_salida, output_name)
                 imageio.imsave(output_path, data.get_pixel_data_modified_8_bits(), format='tiff')
                 print(f"Imagen TIFF guardada en: {output_path}")
