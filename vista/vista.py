@@ -88,6 +88,22 @@ class Vista(Gtk.Window):
         self.box_botones.pack_start(self.check_button, False, False, 10)
         self.value_windowing_active = False
 
+        # Añadir una entrada para introducir números
+        self.entry_numero_window_center = Gtk.Entry()
+        self.entry_numero_window_center.set_input_purpose(Gtk.InputPurpose.DIGITS)
+        self.entry_numero_window_center.set_placeholder_text("Window Center")
+        # Conexión al evento changed
+        self.entry_numero_window_center.connect("activate", self.on_entry_numero_changed_window_center)
+        self.box_botones.pack_start(self.entry_numero_window_center, False, False, 10)
+
+        # Añadir una entrada para introducir números
+        self.entry_numero_window_width = Gtk.Entry()
+        self.entry_numero_window_width.set_input_purpose(Gtk.InputPurpose.DIGITS)
+        self.entry_numero_window_width.set_placeholder_text("Window Width")
+        # Conexión al evento changed
+        self.entry_numero_window_width.connect("activate", self.on_entry_numero_changed_window_width)
+        self.box_botones.pack_start(self.entry_numero_window_width, False, False, 10)
+
         # Boton que elimina todas las imagenes que han sido cargadas
         self.boton_eliminar_todas_fotos = Gtk.Button()
         self.boton_eliminar_todas_fotos.connect("clicked", self.logica_boton_eliminar_lista_fotos)
@@ -190,6 +206,8 @@ class Vista(Gtk.Window):
         self.boton_eliminar_foto.hide()
         self.boton_siguiente.hide()
         self.boton_eliminar_todas_fotos.hide()
+        self.entry_numero_window_center.hide()
+        self.entry_numero_window_width.hide()
 
 #-------------------------------------------- METODOS DE CARGA DE IMAGENES --------------------------------------------#
 
@@ -293,6 +311,16 @@ class Vista(Gtk.Window):
             self.cargar_y_mostrar_images(vista_data)
             self.mostrar_imagen_8_bits(self.imagecv_8_bits_displayed)
             self.mostrar_imagen_16_bits(self.imagecv_16_bits_displayed)
+
+            # Hacer visibles los botones para eliminar imagenes
+            self.boton_eliminar_foto.show()
+            self.boton_eliminar_todas_fotos.show()
+
+            if (len(self.lista_imagenes) > 1):
+                # Hacer visibles los botones para movernos entre imagenes
+                self.boton_anterior.show()
+                self.boton_siguiente.show()
+
         elif response == Gtk.ResponseType.CANCEL:
             print("Cancel clicked")
         dialog.destroy()
@@ -435,6 +463,11 @@ class Vista(Gtk.Window):
                 if self.posicion_lista >= len(self.lista_imagenes):
                     self.posicion_lista -= 1
 
+                # En caso de que haya solo una imagen escondemos los botones para cambiar las fotos
+                if len(self.lista_imagenes) == 1:
+                    self.boton_anterior.hide()
+                    self.boton_siguiente.hide()
+
                 # Mostrar la siguiente foto
                 self.cargar_y_mostrar_images(self.lista_imagenes[self.posicion_lista])
                 self.mostrar_imagen_8_bits(self.imagecv_8_bits_displayed)
@@ -535,9 +568,35 @@ class Vista(Gtk.Window):
     def checkbutton_windowing(self, button):
         if button.get_active():
             self.value_windowing_active = True
+            self.entry_numero_window_center.show()
+            self.entry_numero_window_width.show()
         else:
             self.value_windowing_active = False
+            self.entry_numero_window_center.hide()
+            self.entry_numero_window_width.hide()
         print("Windowing permanente ", self.value_windowing_active)
+
+    def on_entry_numero_changed_window_center(self, entry):
+        # Esta función se ejecutará cada vez que el contenido de la entrada cambie
+        # Aquí puedes modificar la variable self.windowing_center_16_bits con el valor introducido en la entrada
+        try:
+            nuevo_valor = int(entry.get_text())  # Convertir el texto de la entrada a float
+            self.windowing_center_16_bits = nuevo_valor
+            self.aplicar_windowing_viewport_16_bits()
+        except ValueError:
+            # Manejar el caso en el que el texto introducido no sea un número válido
+            pass
+
+    def on_entry_numero_changed_window_width(self, entry):
+        # Esta función se ejecutará cada vez que el contenido de la entrada cambie
+        # Aquí puedes modificar la variable self.windowing_center_16_bits con el valor introducido en la entrada
+        try:
+            nuevo_valor = int(entry.get_text())  # Convertir el texto de la entrada a float
+            self.windowing_width_16_bits = nuevo_valor
+            self.aplicar_windowing_viewport_16_bits()
+        except ValueError:
+            # Manejar el caso en el que el texto introducido no sea un número válido
+            pass
 
     def sincronizar_valores_windowing_8_bits(self):
         value_center_16_bits = self.windowing_center_16_bits
