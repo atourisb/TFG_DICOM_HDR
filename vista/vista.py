@@ -578,9 +578,13 @@ class Vista(Gtk.Window):
 
     def on_entry_numero_changed_window_center(self, entry):
         # Esta función se ejecutará cada vez que el contenido de la entrada cambie
-        # Aquí puedes modificar la variable self.windowing_center_16_bits con el valor introducido en la entrada
         try:
-            nuevo_valor = int(entry.get_text())  # Convertir el texto de la entrada a float
+            # Convertir el texto de la entrada a int
+            nuevo_valor = int(entry.get_text())
+            if (nuevo_valor > 65535):
+                nuevo_valor = 65535
+            elif (nuevo_valor < 0):
+                nuevo_valor = 0
             self.windowing_center_16_bits = nuevo_valor
             self.aplicar_windowing_viewport_16_bits()
         except ValueError:
@@ -589,9 +593,13 @@ class Vista(Gtk.Window):
 
     def on_entry_numero_changed_window_width(self, entry):
         # Esta función se ejecutará cada vez que el contenido de la entrada cambie
-        # Aquí puedes modificar la variable self.windowing_center_16_bits con el valor introducido en la entrada
         try:
-            nuevo_valor = int(entry.get_text())  # Convertir el texto de la entrada a float
+            # Convertir el texto de la entrada a int
+            nuevo_valor = int(entry.get_text())
+            if (nuevo_valor > 65535):
+                nuevo_valor = 65535
+            elif (nuevo_valor < 0):
+                nuevo_valor = 0
             self.windowing_width_16_bits = nuevo_valor
             self.aplicar_windowing_viewport_16_bits()
         except ValueError:
