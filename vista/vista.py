@@ -54,37 +54,33 @@ class Vista(Gtk.Window):
         self.windowing_center_16_bits = 32767
         self.windowing_width_16_bits = 65535
 
-        # Boton para cargar una imagen
-        self.boton_cargar_fichero = Gtk.Button(label="Elegir Fichero")
-        self.boton_cargar_fichero.connect("clicked", self.logica_boton_elegir_fichero)
+        # Boton para cargar una imagen o una carpeta con multiples imagenes
+        self.boton_cargar_fichero = Gtk.Button(label="Abrir archivo/carpeta")
+        #self.boton_cargar_fichero.connect("clicked", self.evento_boton_elegir_fichero)
+        self.boton_cargar_fichero.connect("clicked", self.evento_boton_elegir_archivo_o_directorio)
         self.box_botones.pack_start(self.boton_cargar_fichero, False, False, 10)
-
-        # Boton para cargar una carpeta con multiples imagenes, podremos pasar a la siguiente foto o a la anterior
-        self.boton_cargar_carpeta = Gtk.Button(label="Elegir Carpeta")
-        self.boton_cargar_carpeta.connect("clicked", self.logica_boton_elegir_directorio)
-        self.box_botones.pack_start(self.boton_cargar_carpeta, False, False, 10)
 
         # Boton para movernos a la imagen anterior de las imagenes cargadas
         self.boton_anterior = Gtk.Button(label="Anterior Foto")
-        self.boton_anterior.connect("clicked", self.logica_boton_anterior)
+        self.boton_anterior.connect("clicked", self.evento_boton_anterior)
         self.boton_anterior.hide()
         self.box_botones.pack_start(self.boton_anterior, False, False, 10)
 
         # Boton para movernos a la imagen siguiente de las imagenes cargadas
         self.boton_siguiente = Gtk.Button(label="Siguiente Foto")
-        self.boton_siguiente.connect("clicked", self.logica_boton_siguiente)
+        self.boton_siguiente.connect("clicked", self.evento_boton_siguiente)
         self.boton_siguiente.hide()
         self.box_botones.pack_start(self.boton_siguiente, False, False, 10)
 
         # Boton para eliminar la imagen que se esta representando en la aplicacion
         self.boton_eliminar_foto = Gtk.Button(label="Eliminar Foto Actual")
-        self.boton_eliminar_foto.connect("clicked", self.logica_boton_eliminar_foto_actual)
+        self.boton_eliminar_foto.connect("clicked", self.evento_boton_eliminar_foto_actual)
         self.boton_eliminar_foto.hide()
         self.box_botones.pack_start(self.boton_eliminar_foto, False, False, 10)
 
         # CheckBox para activar y desactivar el windowing
         self.check_button = Gtk.CheckButton(label="Activar Windowing")
-        self.check_button.connect("toggled", self.checkbutton_windowing)
+        self.check_button.connect("toggled", self.evento_checkbutton_windowing)
         self.box_botones.pack_start(self.check_button, False, False, 10)
         self.value_windowing_active = False
 
@@ -93,7 +89,7 @@ class Vista(Gtk.Window):
         self.entry_numero_window_center.set_input_purpose(Gtk.InputPurpose.DIGITS)
         self.entry_numero_window_center.set_placeholder_text("Window Center")
         # Conexión al evento changed
-        self.entry_numero_window_center.connect("activate", self.on_entry_numero_changed_window_center)
+        self.entry_numero_window_center.connect("activate", self.evento_entry_cambiado_valor_window_center)
         self.box_botones.pack_start(self.entry_numero_window_center, False, False, 10)
 
         # Añadir una entrada para introducir números
@@ -101,12 +97,12 @@ class Vista(Gtk.Window):
         self.entry_numero_window_width.set_input_purpose(Gtk.InputPurpose.DIGITS)
         self.entry_numero_window_width.set_placeholder_text("Window Width")
         # Conexión al evento changed
-        self.entry_numero_window_width.connect("activate", self.on_entry_numero_changed_window_width)
+        self.entry_numero_window_width.connect("activate", self.evento_entry_cambiado_valor_window_width)
         self.box_botones.pack_start(self.entry_numero_window_width, False, False, 10)
 
         # Boton que elimina todas las imagenes que han sido cargadas
         self.boton_eliminar_todas_fotos = Gtk.Button()
-        self.boton_eliminar_todas_fotos.connect("clicked", self.logica_boton_eliminar_lista_fotos)
+        self.boton_eliminar_todas_fotos.connect("clicked", self.evento_boton_eliminar_lista_fotos)
         self.boton_eliminar_todas_fotos.hide()
         self.boton_eliminar_todas_fotos.set_image(Gtk.Image.new_from_icon_name("user-trash-symbolic", Gtk.IconSize.BUTTON))
         self.box_botones.pack_start(self.boton_eliminar_todas_fotos, False, False, 10)
@@ -179,24 +175,24 @@ class Vista(Gtk.Window):
         #Para reconocer el movimiento en vertical y que funque el cambio de window center
         self.viewport.connect("motion-notify-event", self.evento_movimiento_vertical_window_center)
         self.viewport.connect("motion-notify-event", self.evento_movimiento_horizontal_window_width)
-        self.viewport.connect("button-press-event", self.boton_primario_presionado_windowing)
-        self.viewport.connect("button-release-event", self.boton_primario_liberado_windowing)
+        self.viewport.connect("button-press-event", self.evento_boton_primario_presionado_windowing)
+        self.viewport.connect("button-release-event", self.evento_boton_primario_liberado_windowing)
 
         # Configurar eventos de teclado
-        self.connect("key-press-event", self.logica_presionar_z_zoom)
-        self.connect("key-press-event", self.logica_presionar_x_panning)
+        self.connect("key-press-event", self.evento_presionar_tecla_z_zoom)
+        self.connect("key-press-event", self.evento_presionar_tecla_x_panning)
 
         # Evento zoom con el boton secundario del raton
-        self.connect("button-press-event", self.presionado_boton_siguiente_raton_zoom)
-        self.connect("button-release-event", self.liberado_boton_siguiente_raton_zoom)
+        self.connect("button-press-event", self.evento_presionado_boton_siguiente_raton_zoom)
+        self.connect("button-release-event", self.evento_liberado_boton_siguiente_raton_zoom)
 
         # Evento panning con el boton anterior raton
-        self.connect("button-press-event", self.presionado_boton_atras_raton_panning)
-        self.connect("button-release-event", self.liberado_boton_atras_raton_panning)
+        self.connect("button-press-event", self.evento_presionado_boton_atras_raton_panning)
+        self.connect("button-release-event", self.evento_liberado_boton_atras_raton_panning)
 
         # Evento windowing con el siguiente del raton
-        self.connect("button-press-event", self.presionado_boton_secundario_raton_windowing)
-        self.connect("button-release-event", self.liberado_boton_secundario_raton_windowing)
+        self.connect("button-press-event", self.evento_presionado_boton_secundario_raton_windowing)
+        self.connect("button-release-event", self.evento_liberado_boton_secundario_raton_windowing)
 
         # Mostrar todos los elementos de la ventana
         self.show_all()
@@ -279,99 +275,86 @@ class Vista(Gtk.Window):
 
 #----------------------------------- LOGICA PARA LOS BOTONES DE CARGA DE IMAGENES -------------------------------------#
 
-    #Filtros para el dialogo de elegir archivo
-    def filtros_dialago_elegir_fichero(self, dialog):
-        filter_dcm = Gtk.FileFilter()
-        filter_dcm.set_name("Dicom files")
-        filter_dcm.add_pattern("*.dcm")
-        dialog.add_filter(filter_dcm)
-
-        filter_any = Gtk.FileFilter()
-        filter_any.set_name("Any files")
-        filter_any.add_pattern("*")
-        dialog.add_filter(filter_any)
-
-    # Metodo para elegir el .dcm que queremos convertir y mostrar en la aplicacion
-    def logica_boton_elegir_fichero(self, widget):
+    def evento_boton_elegir_archivo_o_directorio(self, widget):
         dialog = Gtk.FileChooserDialog(
-            title="Please choose a file", parent=self, action=Gtk.FileChooserAction.OPEN
-        )
-        dialog.add_buttons(
-        Gtk.STOCK_CANCEL,
-              Gtk.ResponseType.CANCEL,
-              Gtk.STOCK_OPEN,
-              Gtk.ResponseType.OK,
-        )
-        self.filtros_dialago_elegir_fichero(dialog)
-        response = dialog.run()
-        if response == Gtk.ResponseType.OK:
-            print("Open clicked")
-            print("File selected: " + dialog.get_filename())
-            vista_data = self.crear_vista_data(dialog.get_filename())
-            self.cargar_y_mostrar_images(vista_data)
-            self.mostrar_imagen_8_bits(self.imagecv_8_bits_displayed)
-            self.mostrar_imagen_16_bits(self.imagecv_16_bits_displayed)
-
-            # Hacer visibles los botones para eliminar imagenes
-            self.boton_eliminar_foto.show()
-            self.boton_eliminar_todas_fotos.show()
-
-            if (len(self.lista_imagenes) > 1):
-                # Hacer visibles los botones para movernos entre imagenes
-                self.boton_anterior.show()
-                self.boton_siguiente.show()
-
-        elif response == Gtk.ResponseType.CANCEL:
-            print("Cancel clicked")
-        dialog.destroy()
-
-    # Metodo para cargar todos los .dcm que existan en un directorio y mostrar el ultimo cargado
-    def logica_boton_elegir_directorio(self, widget):
-        dialog = Gtk.FileChooserDialog(
-            title="Please choose a folder",
+            title="Elige un fichero o carpeta",
             parent=self,
-            action=Gtk.FileChooserAction.SELECT_FOLDER,
+            action=Gtk.FileChooserAction.OPEN,
         )
         dialog.add_buttons(
             Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK
         )
         dialog.set_default_size(800, 400)
+
+        # Agregar filtros para archivos .dcm
+        filter_dcm = Gtk.FileFilter()
+        filter_dcm.set_name("Dicom files")
+        filter_dcm.add_pattern("*.dcm")
+        dialog.add_filter(filter_dcm)
+
+        # Mostrar archivos de cualquier tipo
+        filter_any = Gtk.FileFilter()
+        filter_any.set_name("Any files")
+        filter_any.add_pattern("*")
+        dialog.add_filter(filter_any)
+
+        # Cambiar a selección a OPEN que permite seleccionar uno o varios archivos
+        dialog.set_action(Gtk.FileChooserAction.OPEN)
+
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
             print("Select clicked")
-            print("Folder selected: " + dialog.get_filename())
-            path = dialog.get_filename() + ("/*.dcm")
-            directorio, patron = os.path.split(path)
-            directorio = Path(directorio)
-            tiff_files = glob.glob(os.path.join(directorio, '*.dcm'))
-            if not directorio.exists():
-                raise print("No existe directorio")
-            elif not tiff_files:
-                raise print("No existen dcm en el directorio")
+            selected_path = dialog.get_filename()
+            print("Selected path:", selected_path)
+            if os.path.isfile(selected_path):
 
-            for f in glob.glob(path):
-                print(f)
-                print(f.split("/")[-1])
-                self.crear_vista_data(f)
+                # Si se seleccionó un archivo
+                vista_data = self.crear_vista_data(selected_path)
+                self.cargar_y_mostrar_images(vista_data)
+                self.mostrar_imagen_8_bits(self.imagecv_8_bits_displayed)
+                self.mostrar_imagen_16_bits(self.imagecv_16_bits_displayed)
 
-            self.posicion_lista = len(self.lista_imagenes) - 1
-            self.cargar_y_mostrar_images(self.lista_imagenes[self.posicion_lista])
-            self.mostrar_imagen_8_bits(self.imagecv_8_bits_displayed)
-            self.mostrar_imagen_16_bits(self.imagecv_16_bits_displayed)
+                # Mostrar botones para eliminar imágenes
+                self.boton_eliminar_foto.show()
+                self.boton_eliminar_todas_fotos.show()
 
-            # Hacer visibles los botones para movernos entre imagenes
-            self.boton_anterior.show()
-            self.boton_eliminar_foto.show()
-            self.boton_siguiente.show()
-            self.boton_eliminar_todas_fotos.show()
+                if len(self.lista_imagenes) > 1:
+                    # Mostrar botones para navegar entre imágenes
+                    self.boton_anterior.show()
+                    self.boton_siguiente.show()
+            elif os.path.isdir(selected_path):
+                # Si se seleccionó una carpeta
+                print("Folder selected: " + selected_path)
+                path = os.path.join(selected_path, "*.dcm")
+                directorio, patron = os.path.split(path)
+                directorio = Path(directorio)
+                tiff_files = glob.glob(os.path.join(directorio, '*.dcm'))
+                if not tiff_files:
+                    raise print("No existen archivos .dcm en el directorio")
 
-            dialog.get_filename()
+                for f in glob.glob(path):
+                    print(f)
+                    print(f.split("/")[-1])
+                    self.crear_vista_data(f)
+
+                self.posicion_lista = len(self.lista_imagenes) - 1
+                self.cargar_y_mostrar_images(self.lista_imagenes[self.posicion_lista])
+                self.mostrar_imagen_8_bits(self.imagecv_8_bits_displayed)
+                self.mostrar_imagen_16_bits(self.imagecv_16_bits_displayed)
+
+                # Mostrar botones para navegar entre imágenes
+                self.boton_anterior.show()
+                self.boton_eliminar_foto.show()
+                self.boton_siguiente.show()
+                self.boton_eliminar_todas_fotos.show()
+
         elif response == Gtk.ResponseType.CANCEL:
             print("Cancel clicked")
             self.boton_anterior.hide()
             self.boton_eliminar_foto.hide()
             self.boton_siguiente.hide()
             self.boton_eliminar_todas_fotos.hide()
+
         dialog.destroy()
 
 #----------------------------------------------------------------------------------------------------------------------#
@@ -401,7 +384,7 @@ class Vista(Gtk.Window):
 
 #--------------------------------------- METODOS DE PARA LOS BOTONES INTERFAZ -----------------------------------------#
 
-    def logica_boton_anterior(self, widget):
+    def evento_boton_anterior(self, widget):
         self.ax_8_bits.clear()
         self.ax_16_bits.clear()
         self.ax_8_bits.axis('off')
@@ -425,7 +408,7 @@ class Vista(Gtk.Window):
         self.mostrar_imagen_8_bits(self.imagecv_8_bits_displayed)
         self.mostrar_imagen_16_bits(self.imagecv_16_bits_displayed)
 
-    def logica_boton_siguiente(self, widget):
+    def evento_boton_siguiente(self, widget):
 
         self.windowing_center_8_bits = 127
         self.windowing_width_8_bits = 255
@@ -444,7 +427,7 @@ class Vista(Gtk.Window):
         self.mostrar_imagen_8_bits(self.imagecv_8_bits_displayed)
         self.mostrar_imagen_16_bits(self.imagecv_16_bits_displayed)
 
-    def logica_boton_eliminar_foto_actual(self, widget):
+    def evento_boton_eliminar_foto_actual(self, widget):
 
         self.windowing_center_8_bits = 127
         self.windowing_width_8_bits = 255
@@ -455,7 +438,9 @@ class Vista(Gtk.Window):
             raise Exception("La lista esta vacia")
 
         if self.posicion_lista < len(self.lista_imagenes):
+
             del self.lista_imagenes[self.posicion_lista]
+            self.controlador.borrar_dicom_cargado_en_posicion(self.posicion_lista)
 
             # Verificar si la lista tiene elementos después de borrar
             if self.lista_imagenes:
@@ -485,7 +470,7 @@ class Vista(Gtk.Window):
 
         return True
 
-    def logica_boton_eliminar_lista_fotos(self, widget):
+    def evento_boton_eliminar_lista_fotos(self, widget):
         if len(self.lista_imagenes) == 0:
             raise Exception("La lista esta vacia")
 
@@ -502,6 +487,8 @@ class Vista(Gtk.Window):
         self.ax_16_bits.axis('off')
         self.canvas.draw()
 
+        self.controlador.borrar_todos_los_dicom_cargados_de_la_lista()
+
         self.boton_anterior.hide()
         self.boton_eliminar_foto.hide()
         self.boton_siguiente.hide()
@@ -512,7 +499,7 @@ class Vista(Gtk.Window):
 
 #----------------------------------- LOGICA ACCIONES (ZOOM, PANNING, WINDOWING) ---------------------------------------#
 
-    def logica_presionar_z_zoom(self, widget, event):
+    def evento_presionar_tecla_z_zoom(self, widget, event):
         if event.keyval == Gdk.KEY_z:
             if not self.zoom_teclado:
                 self.zoom_teclado = True
@@ -522,7 +509,7 @@ class Vista(Gtk.Window):
                 print("Desactivado Zoom")
             self.toolbar.zoom()
 
-    def logica_presionar_x_panning(self, widget, event):
+    def evento_presionar_tecla_x_panning(self, widget, event):
         if event.keyval == Gdk.KEY_x:
             if not self.panning_teclado:
                 self.panning_teclado = True
@@ -533,39 +520,39 @@ class Vista(Gtk.Window):
             self.toolbar.pan()
 
     #------------------ EVENTOS WINDOWING RATON -----------------
-    def presionado_boton_secundario_raton_windowing(self, widget, event):
+    def evento_presionado_boton_secundario_raton_windowing(self, widget, event):
         if event.button == Gdk.BUTTON_SECONDARY:
             self.value_windowing_active = True
 
-    def liberado_boton_secundario_raton_windowing(self, widget, event):
+    def evento_liberado_boton_secundario_raton_windowing(self, widget, event):
         if event.button == Gdk.BUTTON_SECONDARY:
             self.value_windowing_active = False
 
     #------------------------------------------------------------
 
     #------------------- EVENTOS PANNING RATON-------------------
-    def presionado_boton_atras_raton_panning(self, widget, event):
+    def evento_presionado_boton_atras_raton_panning(self, widget, event):
         if event.button == 4:
             self.toolbar.pan()
 
-    def liberado_boton_atras_raton_panning(self, widget, event):
+    def evento_liberado_boton_atras_raton_panning(self, widget, event):
         if event.button == 4:
             self.toolbar.pan()
 
     #------------------------------------------------------------
 
     #-------------------- EVENTOS ZOOM RATON --------------------
-    def presionado_boton_siguiente_raton_zoom(self, widget, event):
+    def evento_presionado_boton_siguiente_raton_zoom(self, widget, event):
         if event.button == 5:
             self.toolbar.zoom()
 
-    def liberado_boton_siguiente_raton_zoom(self, widget, event):
+    def evento_liberado_boton_siguiente_raton_zoom(self, widget, event):
         if event.button == 5:
             self.toolbar.zoom()
 
     #------------------------------------------------------------
 
-    def checkbutton_windowing(self, button):
+    def evento_checkbutton_windowing(self, button):
         if button.get_active():
             self.value_windowing_active = True
             self.entry_numero_window_center.show()
@@ -576,7 +563,7 @@ class Vista(Gtk.Window):
             self.entry_numero_window_width.hide()
         print("Windowing permanente ", self.value_windowing_active)
 
-    def on_entry_numero_changed_window_center(self, entry):
+    def evento_entry_cambiado_valor_window_center(self, entry):
         # Esta función se ejecutará cada vez que el contenido de la entrada cambie
         try:
             # Convertir el texto de la entrada a int
@@ -591,7 +578,7 @@ class Vista(Gtk.Window):
             # Manejar el caso en el que el texto introducido no sea un número válido
             pass
 
-    def on_entry_numero_changed_window_width(self, entry):
+    def evento_entry_cambiado_valor_window_width(self, entry):
         # Esta función se ejecutará cada vez que el contenido de la entrada cambie
         try:
             # Convertir el texto de la entrada a int
@@ -620,7 +607,7 @@ class Vista(Gtk.Window):
         print("Valor window width de la imagen de 8 bits: ", self.windowing_width_8_bits)
         self.aplicar_windowing_viewport_8_bits()
 
-    def boton_primario_presionado_windowing(self, viewport, event):
+    def evento_boton_primario_presionado_windowing(self, viewport, event):
         if self.value_windowing_active:
             if event.button == Gdk.BUTTON_PRIMARY:  # Botón izquierdo del ratón
                 self.start_y = event.y
@@ -629,7 +616,7 @@ class Vista(Gtk.Window):
                 self.start_window_width = self.windowing_width_16_bits
                 self.mouse_pressed = True
 
-    def boton_primario_liberado_windowing(self, viewport, event):
+    def evento_boton_primario_liberado_windowing(self, viewport, event):
         if self.value_windowing_active:
             if event.button == Gdk.BUTTON_PRIMARY:  # Botón izquierdo del ratón
                 self.aplicar_windowing_viewport_16_bits()

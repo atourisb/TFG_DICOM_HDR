@@ -31,7 +31,7 @@ class Controlador:
     def cargar_unico_dicom(self, ruta):
         try:
             print(self.mensajes['cargar_imagen_unica'])
-            self.modelo.crear_y_agreagar_a_la_lista_dicom_data(ruta)
+            self.modelo.crear_y_agregar_a_la_lista_dicom_data(ruta)
         except (ArchivoNoEncontradoError, NoEsArchivoError, ExtensionIncorrectaError) as e:
             print("Error:", e)
             raise
@@ -39,7 +39,7 @@ class Controlador:
     def cargar_multiples_dicom(self, ruta):
         try:
             print(self.mensajes['cargar_imagenes_multiples'])
-            self.modelo.crear_y_agreagar_a_la_lista_multiples_dicom_data_(ruta)
+            self.modelo.crear_y_agregar_a_la_lista_multiples_dicom_data_(ruta)
         except (DirectorioNoExisteError, ArchivosDCMNoEncontradosError) as e:
             print("Error:", e)
             raise

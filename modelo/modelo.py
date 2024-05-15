@@ -33,12 +33,12 @@ class Modelo():
 
 #----------------------------------------- Metodos para crear el dicom_data -------------------------------------------#
 
-    def crear_y_agreagar_a_la_lista_dicom_data(self, ruta):
+    def crear_y_agregar_a_la_lista_dicom_data(self, ruta):
         ds = self.dicom_utils.read_dicom(ruta)
         self.dicom_data = ds
         self.lista_dicom.append(self.dicom_data)
 
-    def crear_y_agreagar_a_la_lista_multiples_dicom_data_(self, ruta):
+    def crear_y_agregar_a_la_lista_multiples_dicom_data_(self, ruta):
         ds_multiple = self.dicom_utils.read_multiple_dicom(ruta)
         for element in ds_multiple:
             self.dicom_data = element
